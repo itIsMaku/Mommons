@@ -5,15 +5,49 @@ plugins {
 group 'cz.maku'
 version '1.0'
 
+sourceSets {
+    ap {
+        compileClasspath += main.compileClasspath + main.output
+    }
+}
+
 repositories {
     mavenCentral()
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation "com.google.guava:guava:31.0.1-jre"
+    implementation 'org.jetbrains:annotations:20.1.0'
+    compileOnly fileTree(include: ['*.jar'], dir: 'libs')
+    annotationProcessor fileTree(include: ['*.jar'], dir: 'libs')
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    implementation 'com.google.auto.service:auto-service:1.0.1'
 }
 
 test {
     useJUnitPlatform()
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaCompile) {
+    doFirst {
+        println "AnnotationProcessorPath for $name is ${options.getAnnotationProcessorPath().getFiles()}"
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+    from sourceSets.ap.output
+}
+
+jar {
+    from sourceSets.ap.output
 }

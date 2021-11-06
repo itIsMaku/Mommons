@@ -1,0 +1,9 @@
+main: cz.maku.test.TestPlugin
+name: Testovani
+version: 1.1
+authors: [itIsMaku]
+api-version: 1.17.1
+description: Another worker-based plugin
+website: www.maku.website
+depend: []
+softdepend: []
