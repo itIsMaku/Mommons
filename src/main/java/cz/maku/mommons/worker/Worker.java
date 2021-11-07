@@ -1,6 +1,8 @@
 package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
+import cz.maku.mommons.storage.cloud.CachedCloud;
+import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +19,15 @@ public class Worker {
     private final Map<Class<?>, Object> services = Maps.newConcurrentMap();
     private final Map<Class<?>, WorkerServiceClass> workerClasses = Maps.newConcurrentMap();
     private JavaPlugin javaPlugin;
+    private MySQL mySQL;
+
+    public Worker() {
+        registerServices(CachedCloud.class);
+    }
+
+    public <T> T getService(Class<T> tClass) {
+        return (T) workerClasses.get(tClass).getObject();
+    }
 
     public void registerServices(Class<?>... classes) {
         for (Class<?> clazz : classes) {
@@ -26,6 +37,10 @@ public class Worker {
                 throw new IllegalArgumentException("Registered service " + clazz.getName() + " is not annoted with @Service.");
             }
         }
+    }
+
+    public void setPublicMySQL(MySQL mySQL) {
+        this.mySQL = mySQL;
     }
 
     public void registerSpecialServices(Class<?>... classes) {
