@@ -2,6 +2,7 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
 import cz.maku.mommons.storage.cloud.CachedCloud;
+import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.*;
 import lombok.AccessLevel;
@@ -23,6 +24,7 @@ public class Worker {
 
     public Worker() {
         registerServices(CachedCloud.class);
+        registerServices(PlayerCloud.class);
     }
 
     public <T> T getService(Class<T> tClass) {

@@ -18,7 +18,7 @@ public class CachedCloud {
     @Getter(AccessLevel.PROTECTED)
     private final Map<String, String> cache = Maps.newConcurrentMap();
 
-    public void add(String key, @Nullable String value) {
+    public void set(String key, @Nullable String value) {
         if (cache.containsKey(key)) {
             MySQL.getApi().queryAsync("mommons_cachedcloud_data", "UPDATE {table} SET data_value = ? WHERE data_key = ?;", value, key);
         } else {
