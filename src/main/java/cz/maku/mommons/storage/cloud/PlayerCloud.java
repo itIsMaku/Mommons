@@ -3,6 +3,7 @@ package cz.maku.mommons.storage.cloud;
 import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.Service;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -11,21 +12,21 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class PlayerCloud {
 
-    public void set(String key, String value) {
-        if (MySQL.getApi().query("mommons_playercloud_data", "SELECT * FROM {table} WHERE data_key = ?;", key).isEmpty()) {
-            MySQL.getApi().query("mommons_playercloud_data", "INSERT INTO {table} (data_key, data_value) VALUES (?, ?);", key, value);
+    public void set(String key, String value, Player player) {
+        if (MySQL.getApi().query("mommons_playercloud_data", "SELECT * FROM {table} WHERE data_key = ? AND WHERE player = ?;", key, player.getName()).isEmpty()) {
+            MySQL.getApi().query("mommons_playercloud_data", "INSERT INTO {table} (data_key, data_value, player) VALUES (?, ?, ?);", key, value, player.getName());
         } else {
-            MySQL.getApi().query("mommons_playercloud_data", "UPDATE {table} SET data_value = ? WHERE data_key = ?;", value, key);
+            MySQL.getApi().query("mommons_playercloud_data", "UPDATE {table} SET data_value = ? WHERE data_key = ? AND WHERE player = ?;", value, key, player.getName());
         }
     }
 
-    public void setAsync(String key, String value) {
-        CompletableFuture.runAsync(() -> set(key, value));
+    public void setAsync(String key, String value, Player player) {
+        CompletableFuture.runAsync(() -> set(key, value, player));
     }
 
     @Nullable
-    public String get(String key) {
-        List<SQLRow> rows = MySQL.getApi().query("mommons_playercloud_data", "SELECT * FROM {table} WHERE data_key = ?;", key);
+    public String get(String key, Player player) {
+        List<SQLRow> rows = MySQL.getApi().query("mommons_playercloud_data", "SELECT * FROM {table} WHERE data_key = ? AND WHERE player = ?;", key, player.getName());
         if (rows.isEmpty()) return null;
         return rows.get(0).getString(key);
     }

@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     implementation "com.google.guava:guava:31.0.1-jre"
-    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'org.jetbrains:annotations:22.0.0'
     compileOnly fileTree(include: ['*.jar'], dir: 'libs')
     annotationProcessor fileTree(include: ['*.jar'], dir: 'libs')
     compileOnly 'org.projectlombok:lombok:1.18.22'
@@ -34,12 +34,6 @@ compileJava.options.encoding = 'UTF-8'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-}
-
-tasks.withType(JavaCompile) {
-    doFirst {
-        println "AnnotationProcessorPath for $name is ${options.getAnnotationProcessorPath().getFiles()}"
-    }
 }
 
 task sourcesJar(type: Jar) {

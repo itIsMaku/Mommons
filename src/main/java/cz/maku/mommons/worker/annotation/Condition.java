@@ -7,13 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Service {
+public @interface Condition {
 
-    boolean commands() default false;
+    boolean condition();
 
-    boolean listener() default false;
-
-    boolean scheduled() default false;
-
-    boolean condition() default false;
 }

@@ -16,7 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,4 +176,9 @@ public class WorkerServiceClass {
         CommandMap commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
         commandMap.register(fallbackPrefix, cmd);
     }
+
+    public void destroy() {
+
+    }
+
 }

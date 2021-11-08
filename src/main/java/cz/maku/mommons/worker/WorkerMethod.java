@@ -3,6 +3,8 @@ package cz.maku.mommons.worker;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.worker.annotation.*;
 import cz.maku.mommons.worker.exception.ServiceNotFoundException;
+import cz.maku.mommons.worker.type.ConsoleColors;
+import cz.maku.mommons.worker.type.WorkerLoggerType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -31,7 +33,12 @@ public class WorkerMethod {
             }
             o[i] = params[i];
         }
-        method.invoke(object, o);
+        try {
+            method.invoke(object, o);
+        } catch (Exception e) {
+            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
+            WorkerLogger.error(e);
+        }
         return true;
     }
 
@@ -87,6 +94,10 @@ public class WorkerMethod {
 
     public boolean isInit() {
         return method.isAnnotationPresent(Initialize.class);
+    }
+
+    public boolean isCondition() {
+        return method.isAnnotationPresent(Condition.class);
     }
 
 }
