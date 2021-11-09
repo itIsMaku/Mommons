@@ -2,10 +2,12 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BukkitCommand;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
 import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
+import cz.maku.mommons.worker.annotation.sql.Download;
 import cz.maku.mommons.worker.exception.ServiceNotFoundException;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -93,6 +95,29 @@ public class WorkerServiceClass {
                     workerMethod.invoke(params.toArray());
                 }
                 return;
+            }
+            if (service.sql()) {
+                if (workerMethod.isSqlDownload()) {
+                    Download download = method.getAnnotation(Download.class);
+                    if (workerMethod.isAsync()) {
+                        Bukkit.getScheduler().runTaskTimerAsynchronously(worker.getJavaPlugin(), () -> {
+                            try {
+                                workerMethod.invoke(new Object[]{MySQL.getApi().queryAsync(download.table(), download.query())});
+                            } catch (InvocationTargetException | IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }, download.delay(), download.period());
+                    } else {
+                        Bukkit.getScheduler().runTaskTimer(worker.getJavaPlugin(), () -> {
+                            try {
+                                workerMethod.invoke(new Object[]{MySQL.getApi().query(download.table(), download.query())});
+                            } catch (InvocationTargetException | IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }, download.delay(), download.period());
+                    }
+                    return;
+                }
             }
             if (service.scheduled() && workerMethod.isRepeatTask()) {
                 Repeat repeat = method.getAnnotation(Repeat.class);

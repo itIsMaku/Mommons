@@ -6,13 +6,16 @@ import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.Async;
 import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
+import cz.maku.mommons.worker.annotation.sql.Download;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
-@Service(scheduled = true)
+@Service(sql = true)
 public class CachedCloud {
 
     @Getter(AccessLevel.PROTECTED)
@@ -32,10 +35,10 @@ public class CachedCloud {
         return cache.get(key);
     }
 
-    @Repeat(period = 1200L)
+    @Download(table = "mommons_cachedcloud_data", query = "SELECT * FROM {table};", period = 1200L)
     @Async
-    public void cacheWorker() {
-        MySQL.getApi().queryAsync("mommons_cachedcloud_data", "SELECT * FROM {table};").thenAcceptAsync(rows -> {
+    public void cacheWorker(CompletableFuture<List<SQLRow>> future) {
+        future.thenAcceptAsync(rows -> {
             cache.clear();
             for (SQLRow row : rows) {
                 cache.put(row.getString("data_key"), row.getString("data_value"));

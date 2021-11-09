@@ -16,4 +16,6 @@ public @interface Service {
     boolean scheduled() default false;
 
     boolean condition() default false;
+
+    boolean sql() default false;
 }

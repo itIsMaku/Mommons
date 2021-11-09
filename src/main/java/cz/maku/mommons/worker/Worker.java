@@ -36,7 +36,7 @@ public class Worker {
             if (clazz.isAnnotationPresent(Service.class)) {
                 services.put(clazz, null);
             } else {
-                throw new IllegalArgumentException("Registered service " + clazz.getName() + " is not annoted with @Service.");
+                throw new IllegalArgumentException("Registered service " + clazz.getName() + " is not annotated with @Service.");
             }
         }
     }

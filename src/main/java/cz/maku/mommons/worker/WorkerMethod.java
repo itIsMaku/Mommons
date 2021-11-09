@@ -2,6 +2,7 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Lists;
 import cz.maku.mommons.worker.annotation.*;
+import cz.maku.mommons.worker.annotation.sql.Download;
 import cz.maku.mommons.worker.exception.ServiceNotFoundException;
 import cz.maku.mommons.worker.type.ConsoleColors;
 import cz.maku.mommons.worker.type.WorkerLoggerType;
@@ -21,25 +22,25 @@ public class WorkerMethod {
     private final Method method;
     private final Object object;
 
-    public boolean invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
+    public Object invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
         Parameter[] methodParameters = method.getParameters();
         if (params.length >= methodParameters.length) {
-            return false;
+            return null;
         }
         Object[] o = new Object[methodParameters.length];
         for (int i = 0; i < params.length; i++) {
             if (!methodParameters[i].getType().isAssignableFrom(params[i].getClass())) {
-                return false;
+                return null;
             }
             o[i] = params[i];
         }
         try {
-            method.invoke(object, o);
+            return method.invoke(object, o);
         } catch (Exception e) {
             WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
             WorkerLogger.error(e);
+            return null;
         }
-        return true;
     }
 
     @SneakyThrows
@@ -98,6 +99,10 @@ public class WorkerMethod {
 
     public boolean isCondition() {
         return method.isAnnotationPresent(Condition.class);
+    }
+
+    public boolean isSqlDownload() {
+        return method.isAnnotationPresent(Download.class);
     }
 
 }

@@ -31,12 +31,19 @@ public final class TextUtils {
         List<String> lines = Lists.newArrayList();
         String[] words = text.split(" ");
         StringBuilder currentLine = new StringBuilder();
+        boolean space = false;
         for (String word : words) {
             if (currentLine.length() >= averageLineLength) {
                 lines.add(currentLine.toString());
                 currentLine = new StringBuilder();
+                space = false;
             }
-            currentLine.append(" ").append(word);
+            if (space) {
+                currentLine.append(" ").append(word);
+            } else {
+                currentLine.append(word);
+                space = true;
+            }
         }
         if (currentLine.length() > 0) lines.add(currentLine.toString());
         AtomicReference<String> ccode = new AtomicReference<>(null);
