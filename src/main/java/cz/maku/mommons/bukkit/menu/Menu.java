@@ -1,4 +1,4 @@
-package cz.maku.mommons.menu;
+package cz.maku.mommons.bukkit.menu;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;

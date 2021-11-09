@@ -1,4 +1,4 @@
-package cz.maku.mommons.menu;
+package cz.maku.mommons.bukkit.menu;
 
 import com.google.common.collect.Lists;
 import lombok.Data;

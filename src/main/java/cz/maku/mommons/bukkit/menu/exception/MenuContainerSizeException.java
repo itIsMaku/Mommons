@@ -1,4 +1,4 @@
-package cz.maku.mommons.menu.exception;
+package cz.maku.mommons.bukkit.menu.exception;
 
 public class MenuContainerSizeException extends Exception {
 

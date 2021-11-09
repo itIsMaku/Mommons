@@ -1,7 +1,7 @@
-package cz.maku.mommons.menu;
+package cz.maku.mommons.bukkit.menu;
 
 import com.google.common.collect.Lists;
-import cz.maku.mommons.menu.exception.MenuContainerSizeException;
+import cz.maku.mommons.bukkit.menu.exception.MenuContainerSizeException;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.ArrayUtils;
