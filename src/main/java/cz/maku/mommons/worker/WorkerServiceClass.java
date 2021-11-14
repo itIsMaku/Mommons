@@ -2,13 +2,13 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BukkitCommand;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
 import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
 import cz.maku.mommons.worker.annotation.sql.Download;
-import cz.maku.mommons.worker.exception.ServiceNotFoundException;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
@@ -18,6 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,24 +55,28 @@ public class WorkerServiceClass {
             Field field = workerField.getField();
             if (workerField.isLoad()) {
                 Class<?> fieldType = field.getType();
+                System.out.println(PlayerCloud.class);
+                System.out.println(fieldType);
                 if (worker.getServices().containsKey(fieldType)) {
                     if (worker.getServices().get(fieldType) == null) {
                         Object object = fieldType.newInstance();
                         worker.getServices().put(fieldType, object);
                         worker.initializeClass(fieldType, object);
                         workerField.setValue(object);
+                    } else {
+                        workerField.setValue(worker.getServices().get(fieldType));
+                    }
+                } else if (worker.getSpecialServices().containsKey(fieldType)) {
+                    if (worker.getSpecialServices().get(fieldType) == null) {
+                        Object object = fieldType.newInstance();
+                        worker.getSpecialServices().put(fieldType, object);
+                        worker.initializeClass(fieldType, object);
+                        workerField.setValue(object);
+                    } else {
+                        workerField.setValue(worker.getSpecialServices().get(fieldType));
                     }
                 } else {
-                    if (worker.getSpecialServices().containsKey(fieldType)) {
-                        if (worker.getSpecialServices().get(fieldType) == null) {
-                            Object object = fieldType.newInstance();
-                            worker.getSpecialServices().put(fieldType, object);
-                            worker.initializeClass(fieldType, object);
-                            workerField.setValue(object);
-                        }
-                    } else {
-                        throw new ServiceNotFoundException("Service " + fieldType.getName() + " can't be @Load-ed, because isn't registered.");
-                    }
+                    WorkerLogger.error("Service " + fieldType.getName() + " can't be @Load-ed, because isn't registered.");
                 }
             }
         }
@@ -156,7 +161,8 @@ public class WorkerServiceClass {
                     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, String[] args) {
                         CommandSender commandSender = null;
                         String[] commandArgs = null;
-                        Type argsType = new TypeToken<String[]>() {}.getType();
+                        Type argsType = new TypeToken<String[]>() {
+                        }.getType();
                         for (Parameter parameter : method.getParameters()) {
                             if (parameter.getParameterizedType().equals(argsType)) {
                                 commandArgs = args;
@@ -180,7 +186,8 @@ public class WorkerServiceClass {
             }
             if (service.listener() && workerMethod.isEvent()) {
                 BukkitEvent eventAnnotation = method.getAnnotation(BukkitEvent.class);
-                Listener listener = new Listener() {};
+                Listener listener = new Listener() {
+                };
                 worker.getJavaPlugin().getServer().getPluginManager().registerEvent(eventAnnotation.value(), listener, eventAnnotation.priority(), (l, e) -> {
                     params.add(e);
                     try {

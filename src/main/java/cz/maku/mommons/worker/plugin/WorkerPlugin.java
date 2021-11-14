@@ -17,8 +17,8 @@ public abstract class WorkerPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        preLoad();
         worker = new Worker();
+        preLoad();
         worker.setJavaPlugin(this);
         worker.registerServices(registerServices().toArray(new Class[0]));
         worker.registerSpecialServices(registerSpecialServices().toArray(new Class[0]));

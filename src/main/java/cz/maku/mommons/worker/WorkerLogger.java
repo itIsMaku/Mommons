@@ -1,28 +1,37 @@
 package cz.maku.mommons.worker;
 
 import cz.maku.mommons.worker.type.WorkerLoggerType;
+import org.bukkit.Bukkit;
 
 import java.time.LocalDateTime;
 
-import static cz.maku.mommons.worker.type.WorkerLoggerType.*;
+import static cz.maku.mommons.worker.type.WorkerLoggerType.ERROR;
+import static cz.maku.mommons.worker.type.WorkerLoggerType.INFO;
 
 public class WorkerLogger {
 
     protected static String format(WorkerLoggerType workerLoggerType) {
-        return workerLoggerType.getPrefix() + " - " + LocalDateTime.now();
+        return "[Mommons] " + workerLoggerType.getPrefix() + "- " + LocalDateTime.now();
     }
 
     @SafeVarargs
     public static <T> void error(T... content) {
-        System.out.println(format(ERROR));
+        blank(format(ERROR));
         for (T t : content) {
-            System.out.println(ERROR.getPrefix() + t.toString());
+            blank(ERROR.getPrefix() + t.toString());
+        }
+    }
+
+    @SafeVarargs
+    public static <T> void info(T... content) {
+        for (T t : content) {
+            blank(INFO.getPrefix() + t.toString());
         }
     }
 
     public static <T> void blank(T... content) {
         for (T t : content) {
-            System.out.println(t);
+            Bukkit.getConsoleSender().sendMessage(t.toString());
         }
     }
 

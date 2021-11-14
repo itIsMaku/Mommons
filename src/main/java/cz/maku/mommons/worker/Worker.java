@@ -5,26 +5,33 @@ import cz.maku.mommons.storage.cloud.CachedCloud;
 import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.*;
+import cz.maku.mommons.worker.type.WorkerLoggerType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.apache.commons.lang.ObjectUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.*;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter(AccessLevel.PROTECTED)
 public class Worker {
 
-    private final Map<Class<?>, Object> specialServices = Maps.newConcurrentMap();
-    private final Map<Class<?>, Object> services = Maps.newConcurrentMap();
-    private final Map<Class<?>, WorkerServiceClass> workerClasses = Maps.newConcurrentMap();
+    private final Map<Class<?>, Object> specialServices;
+    private final Map<Class<?>, Object> services;
+    private final Map<Class<?>, WorkerServiceClass> workerClasses;
     private JavaPlugin javaPlugin;
     private MySQL mySQL;
 
     public Worker() {
-        registerServices(CachedCloud.class);
-        registerServices(PlayerCloud.class);
+        specialServices = new HashMap<>();
+        services = new HashMap<>();
+        workerClasses = new HashMap<>();
+        Bukkit.getConsoleSender().sendMessage(WorkerLogger.format(WorkerLoggerType.INFO));
     }
 
     public <T> T getService(Class<T> tClass) {
@@ -35,33 +42,39 @@ public class Worker {
         for (Class<?> clazz : classes) {
             if (clazz.isAnnotationPresent(Service.class)) {
                 services.put(clazz, null);
+                WorkerLogger.info("Service " + clazz.getName() + " was registered.");
             } else {
-                throw new IllegalArgumentException("Registered service " + clazz.getName() + " is not annotated with @Service.");
+                WorkerLogger.error("Registered service " + clazz.getName() + " is not annotated with @Service.");
             }
         }
     }
 
     public void setPublicMySQL(MySQL mySQL) {
         this.mySQL = mySQL;
+        WorkerLogger.info("Public MySQL was set.");
     }
 
     public void registerSpecialServices(Class<?>... classes) {
         for (Class<?> clazz : classes) {
             if (clazz.isAnnotationPresent(Service.class)) {
                 specialServices.put(clazz, null);
+                WorkerLogger.info("Special service " + clazz.getName() + " was registered.");
             } else {
-                throw new IllegalArgumentException("Registered service " + clazz.getName() + " is not annoted with @Service.");
+                WorkerLogger.error("Registered service " + clazz.getName() + " is not annotated with @Service.");
             }
         }
     }
 
     public void setJavaPlugin(JavaPlugin javaPlugin) {
         this.javaPlugin = javaPlugin;
+        WorkerLogger.info("JavaPlugin set to class " + javaPlugin.getClass().getName() + ".");
     }
 
     @SneakyThrows
     public void initialize() {
+        WorkerLogger.info("Initializing all special services...");
         initialize(specialServices);
+        WorkerLogger.info("Initializing all services...");
         initialize(services);
     }
 
@@ -82,7 +95,9 @@ public class Worker {
                 services.put(clazz, service);
             }
             initializeClass(clazz, service);
+            WorkerLogger.info("Service " + clazz.getName() + " was initialized.");
         }
+        WorkerLogger.info("All services was initialized.");
     }
 
     protected void initializeClass(Class<?> clazz, Object service) {

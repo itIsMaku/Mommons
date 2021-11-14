@@ -12,7 +12,7 @@ public class MySQL extends JDBC {
     private static MySQL instance;
 
     public MySQL(String ip, int port, String database, String username, String password, boolean useSSL, boolean autoReconnect) {
-        super("jdbc:mysql://" + ip + ":" + port + "/" + database + "?autoReconnect=" + autoReconnect + "&useSSL=" + useSSL, username, password);
+        super("jdbc:mysql://" + ip + ":" + port + "/" + database + "?allowPublicKeyRetrieval=true&autoReconnect=" + autoReconnect + "&useSSL=" + useSSL, username, password);
         instance = this;
     }
 
