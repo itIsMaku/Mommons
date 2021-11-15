@@ -16,7 +16,7 @@ import java.util.*;
 
 @RequiredArgsConstructor
 @Data
-public class Webhook {
+public class Webhook implements Cloneable {
 
     private final String url;
     private String content;
@@ -107,6 +107,21 @@ public class Webhook {
         stream.close();
         connection.getInputStream().close();
         connection.disconnect();
+    }
+
+    @Override
+    public Webhook clone() {
+        try {
+            Webhook clone = (Webhook) super.clone();
+            clone.setAvatarUrl(avatarUrl);
+            clone.setUsername(username);
+            clone.setContent(content);
+            clone.setEmbeds(embeds);
+            clone.setTts(tts);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     @Data
