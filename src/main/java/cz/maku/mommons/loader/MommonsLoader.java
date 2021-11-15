@@ -5,13 +5,25 @@ import cz.maku.mommons.storage.cloud.CachedCloud;
 import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.SQLTable;
 import cz.maku.mommons.storage.database.type.MySQL;
+import cz.maku.mommons.worker.Worker;
 import cz.maku.mommons.worker.annotation.Plugin;
 import cz.maku.mommons.worker.plugin.WorkerPlugin;
+import lombok.Getter;
 
 import java.util.List;
 
-@Plugin(name = "MommonsLoader", main = "cz.maku.mommons.loader.MommonsLoader", authors = {"itIsMaku"}, description = "Plugin what loads every plugin depends on Mommons", version = "1.1", apiVersion = "1.17")
+@Plugin(
+        name = "MommonsLoader",
+        main = "cz.maku.mommons.loader.MommonsLoader",
+        authors = {"itIsMaku"},
+        description = "Plugin what loads every plugin depends on Mommons",
+        version = "1.1",
+        apiVersion = "1.17"
+)
 public class MommonsLoader extends WorkerPlugin {
+
+    @Getter
+    private static MommonsLoader plugin;
 
     @Override
     public List<Class<?>> registerServices() {
@@ -28,9 +40,15 @@ public class MommonsLoader extends WorkerPlugin {
     }
 
     @Override
+    public void preWorkerLoad() {
+        plugin = this;
+    }
+
+    @Override
     public void preLoad() {
         getConfig().options().copyDefaults(true);
         saveConfig();
+        setWorker(new Worker());
         getWorker().setPublicMySQL(new MySQL(
                 getConfigValue(String.class, "address"),
                 getConfigValue(Integer.class, "port"),

@@ -1,7 +1,9 @@
 package cz.maku.mommons.worker.plugin;
 
+import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.worker.Worker;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.List;
 public abstract class WorkerPlugin extends JavaPlugin {
 
     @Getter
+    @Setter
     private Worker worker;
 
     public abstract List<Class<?>> registerServices();
@@ -17,7 +20,8 @@ public abstract class WorkerPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        worker = new Worker();
+        preWorkerLoad();
+        worker = MommonsLoader.getPlugin().getWorker();
         preLoad();
         worker.setJavaPlugin(this);
         worker.registerServices(registerServices().toArray(new Class[0]));
@@ -34,6 +38,8 @@ public abstract class WorkerPlugin extends JavaPlugin {
     }
 
     public abstract void onLoad();
+
+    public void preWorkerLoad() {}
 
     public void preLoad() {}
 

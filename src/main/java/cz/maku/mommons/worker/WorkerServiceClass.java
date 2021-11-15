@@ -55,8 +55,6 @@ public class WorkerServiceClass {
             Field field = workerField.getField();
             if (workerField.isLoad()) {
                 Class<?> fieldType = field.getType();
-                System.out.println(PlayerCloud.class);
-                System.out.println(fieldType);
                 if (worker.getServices().containsKey(fieldType)) {
                     if (worker.getServices().get(fieldType) == null) {
                         Object object = fieldType.newInstance();
@@ -92,14 +90,16 @@ public class WorkerServiceClass {
                     new Thread(() -> {
                         try {
                             workerMethod.invoke(params.toArray());
+                            params.clear();
                         } catch (InvocationTargetException | IllegalAccessException e) {
                             e.printStackTrace();
                         }
                     }).start();
                 } else {
                     workerMethod.invoke(params.toArray());
+                    params.clear();
                 }
-                return;
+                continue;
             }
             if (service.sql()) {
                 if (workerMethod.isSqlDownload()) {
@@ -108,6 +108,7 @@ public class WorkerServiceClass {
                         Bukkit.getScheduler().runTaskTimerAsynchronously(worker.getJavaPlugin(), () -> {
                             try {
                                 workerMethod.invoke(new Object[]{MySQL.getApi().queryAsync(download.table(), download.query())});
+                                params.clear();
                             } catch (InvocationTargetException | IllegalAccessException e) {
                                 e.printStackTrace();
                             }
@@ -116,12 +117,13 @@ public class WorkerServiceClass {
                         Bukkit.getScheduler().runTaskTimer(worker.getJavaPlugin(), () -> {
                             try {
                                 workerMethod.invoke(new Object[]{MySQL.getApi().query(download.table(), download.query())});
+                                params.clear();
                             } catch (InvocationTargetException | IllegalAccessException e) {
                                 e.printStackTrace();
                             }
                         }, download.delay(), download.period());
                     }
-                    return;
+                    continue;
                 }
             }
             if (service.scheduled() && workerMethod.isRepeatTask()) {
@@ -139,6 +141,7 @@ public class WorkerServiceClass {
                             params.add(task);
                         }
                         workerMethod.invoke(params.toArray());
+                        params.clear();
                         if (!tasks.containsKey(workerMethod)) {
                             tasks.put(workerMethod, task);
                         }
@@ -151,7 +154,7 @@ public class WorkerServiceClass {
                 } else {
                     Bukkit.getScheduler().runTaskTimer(worker.getJavaPlugin(), consumer, repeat.delay(), repeat.period());
                 }
-                return;
+                continue;
             }
             if (service.commands() && workerMethod.isCommand()) {
                 BukkitCommand command = method.getAnnotation(BukkitCommand.class);
@@ -179,10 +182,11 @@ public class WorkerServiceClass {
                             params.add(commandArgs);
                         }
                         workerMethod.invoke(params.toArray());
+                        params.clear();
                         return false;
                     }
                 });
-                return;
+                continue;
             }
             if (service.listener() && workerMethod.isEvent()) {
                 BukkitEvent eventAnnotation = method.getAnnotation(BukkitEvent.class);
@@ -192,11 +196,12 @@ public class WorkerServiceClass {
                     params.add(e);
                     try {
                         workerMethod.invoke(params.toArray());
+                        params.clear();
                     } catch (InvocationTargetException | IllegalAccessException ex) {
                         ex.printStackTrace();
                     }
                 }, worker.getJavaPlugin(), false);
-                return;
+                continue;
             }
         }
     }

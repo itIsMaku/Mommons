@@ -5,6 +5,7 @@ import cz.maku.mommons.storage.cloud.CachedCloud;
 import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.*;
+import cz.maku.mommons.worker.type.ConsoleColors;
 import cz.maku.mommons.worker.type.WorkerLoggerType;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -42,39 +43,39 @@ public class Worker {
         for (Class<?> clazz : classes) {
             if (clazz.isAnnotationPresent(Service.class)) {
                 services.put(clazz, null);
-                WorkerLogger.info("Service " + clazz.getName() + " was registered.");
+                WorkerLogger.info(ConsoleColors.RESET +  "Service " + clazz.getName() + " was registered.");
             } else {
-                WorkerLogger.error("Registered service " + clazz.getName() + " is not annotated with @Service.");
+                WorkerLogger.error(ConsoleColors.RESET +  "Registered service " + clazz.getName() + " is not annotated with @Service.");
             }
         }
     }
 
     public void setPublicMySQL(MySQL mySQL) {
         this.mySQL = mySQL;
-        WorkerLogger.info("Public MySQL was set.");
+        WorkerLogger.info(ConsoleColors.RESET +  "Public MySQL was set.");
     }
 
     public void registerSpecialServices(Class<?>... classes) {
         for (Class<?> clazz : classes) {
             if (clazz.isAnnotationPresent(Service.class)) {
                 specialServices.put(clazz, null);
-                WorkerLogger.info("Special service " + clazz.getName() + " was registered.");
+                WorkerLogger.info(ConsoleColors.RESET +  "Special service " + clazz.getName() + " was registered.");
             } else {
-                WorkerLogger.error("Registered service " + clazz.getName() + " is not annotated with @Service.");
+                WorkerLogger.error(ConsoleColors.RESET +  "Registered service " + clazz.getName() + " is not annotated with @Service.");
             }
         }
     }
 
     public void setJavaPlugin(JavaPlugin javaPlugin) {
         this.javaPlugin = javaPlugin;
-        WorkerLogger.info("JavaPlugin set to class " + javaPlugin.getClass().getName() + ".");
+        WorkerLogger.info(ConsoleColors.RESET +  "JavaPlugin set to class " + javaPlugin.getClass().getName() + ".");
     }
 
     @SneakyThrows
     public void initialize() {
-        WorkerLogger.info("Initializing all special services...");
+        WorkerLogger.info(ConsoleColors.RESET + "Initializing all special services...");
         initialize(specialServices);
-        WorkerLogger.info("Initializing all services...");
+        WorkerLogger.info(ConsoleColors.RESET +  "Initializing all services...");
         initialize(services);
     }
 
@@ -95,9 +96,9 @@ public class Worker {
                 services.put(clazz, service);
             }
             initializeClass(clazz, service);
-            WorkerLogger.info("Service " + clazz.getName() + " was initialized.");
+            WorkerLogger.info(ConsoleColors.RESET +  "Service " + clazz.getName() + " was initialized.");
         }
-        WorkerLogger.info("All services was initialized.");
+        WorkerLogger.info(ConsoleColors.RESET +  "All services was initialized.");
     }
 
     protected void initializeClass(Class<?> clazz, Object service) {

@@ -13,6 +13,7 @@ import lombok.SneakyThrows;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -24,12 +25,18 @@ public class WorkerMethod {
 
     public Object invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
         Parameter[] methodParameters = method.getParameters();
-        if (params.length >= methodParameters.length) {
+        if (params.length != methodParameters.length) {
+            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
+            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Parameters lengths are not same!");
+            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Official parameters: " + Arrays.toString(methodParameters));
+            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Worker parameters: " + Arrays.toString(params));
             return null;
         }
         Object[] o = new Object[methodParameters.length];
         for (int i = 0; i < params.length; i++) {
             if (!methodParameters[i].getType().isAssignableFrom(params[i].getClass())) {
+                WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
+                WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "null");
                 return null;
             }
             o[i] = params[i];
