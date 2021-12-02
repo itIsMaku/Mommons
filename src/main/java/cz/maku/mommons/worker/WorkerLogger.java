@@ -1,5 +1,6 @@
 package cz.maku.mommons.worker;
 
+import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.worker.type.WorkerLoggerType;
 import org.bukkit.Bukkit;
 
@@ -36,7 +37,7 @@ public class WorkerLogger {
     }
 
     public static void error(Exception e) {
-        error(e.getStackTrace());
+        e.printStackTrace();
     }
 
 }

@@ -28,7 +28,7 @@ public class PlayerCloud {
     public String get(String key, Player player) {
         List<SQLRow> rows = MySQL.getApi().query("mommons_playercloud_data", "SELECT * FROM {table} WHERE data_key = ? AND player = ?;", key, player.getName());
         if (rows.isEmpty()) return null;
-        return rows.get(0).getString(key);
+        return rows.get(0).getString("data_value");
     }
 
 }

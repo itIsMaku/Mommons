@@ -1,6 +1,9 @@
 package cz.maku.mommons.loader;
 
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.google.common.collect.Lists;
+import cz.maku.mommons.bukkit.hologram.Hologram;
+import cz.maku.mommons.bukkit.hologram.Holograms;
 import cz.maku.mommons.storage.cloud.CachedCloud;
 import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.SQLTable;
@@ -79,6 +82,10 @@ public class MommonsLoader extends WorkerPlugin {
 
     @Override
     public void onUnload() {
+        for (Hologram hologram : Holograms.getHolograms().values()) {
+            hologram.delete();
+        }
+        HologramsAPI.unregisterPlaceholders(this);
         MySQL.getApi().disconnect();
     }
 }

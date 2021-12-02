@@ -1,5 +1,7 @@
 package cz.maku.mommons.cache;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -7,6 +9,7 @@ public class ExpirableValue<T> {
 
     private final int expireAfter;
     private final ChronoUnit unit;
+    @Nullable
     private T value;
     private LocalDateTime lastTime;
 

@@ -44,6 +44,10 @@ public class ExpiringList<E> {
         return l;
     }
 
+    public boolean contains(E element) {
+        return list.stream().filter(pair -> pair.getFirst() == element).findFirst().orElse(null) != null;
+    }
+
     @Nullable
     public E get(int index) {
         Pair<E, LocalDateTime> pair = list.get(index);

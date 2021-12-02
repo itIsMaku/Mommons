@@ -40,6 +40,14 @@ public class ExpiringMap<K, V> {
         return map;
     }
 
+    public boolean containsKey(K key) {
+        return map.containsKey(key);
+    }
+
+    public boolean containsValue(V value) {
+        return map.values().stream().filter(pair -> pair.getFirst() == value).findFirst().orElse(null) != null;
+    }
+
     @Nullable
     public V get(K key) {
         Pair<V, LocalDateTime> pair = map.get(key);
