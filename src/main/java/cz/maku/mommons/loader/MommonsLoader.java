@@ -4,10 +4,14 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.bukkit.hologram.Hologram;
 import cz.maku.mommons.bukkit.hologram.Holograms;
+import cz.maku.mommons.server.Server;
+import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.CachedCloud;
+import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.SQLTable;
 import cz.maku.mommons.storage.database.type.MySQL;
+import cz.maku.mommons.token.NetworkTokenService;
 import cz.maku.mommons.worker.Worker;
 import cz.maku.mommons.worker.annotation.Plugin;
 import cz.maku.mommons.worker.plugin.WorkerPlugin;
@@ -30,7 +34,7 @@ public class MommonsLoader extends WorkerPlugin {
 
     @Override
     public List<Class<?>> registerServices() {
-        return Lists.newArrayList(CachedCloud.class, PlayerCloud.class);
+        return Lists.newArrayList(CachedCloud.class, PlayerCloud.class, DirectCloud.class, NetworkTokenService.class, ServerDataService.class);
     }
 
     @Override
@@ -74,6 +78,10 @@ public class MommonsLoader extends WorkerPlugin {
         playerCloud.addColumn("data_value", String.class);
         playerCloud.create();
 
+        SQLTable serversData = new SQLTable("mommons_servers", MySQL.getApi());
+        serversData.addColumn("id", String.class);
+        serversData.addColumn("data", String.class);
+        serversData.create();
     }
 
     @Override

@@ -1,7 +1,5 @@
 package cz.maku.mommons.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import cz.maku.mommons.rest.annotation.Get;
 import cz.maku.mommons.rest.annotation.Post;
@@ -11,8 +9,6 @@ import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Optional;
 
 public final class Rests {
@@ -27,6 +23,7 @@ public final class Rests {
         }
         Class<?> requestClass = restElement.getAnnotation(RequestClass.class).value();
         Class<?> responseClass = restElement.getAnnotation(ResponseClass.class).value();
+
 
         if (restElement.isAnnotationPresent(Get.class)) {
             Request request = new Request.Builder()
