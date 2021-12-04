@@ -4,10 +4,10 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
-import cz.maku.mommons.rest.annotation.Get;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
+import cz.maku.mommons.utils.Pair;
 import cz.maku.mommons.worker.WorkerLogger;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.Getter;
@@ -16,8 +16,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
@@ -29,6 +34,28 @@ public class Server implements CloudData {
     private final Map<String, Object> cachedData;
     @NotNull
     private final Map<String, Object> localData;
+
+    @SuppressWarnings("all")
+    @NotNull
+    public static Server local() {
+        return WorkerReceiver.getCoreService(ServerDataService.class).getServer();
+    }
+
+    @Nullable
+    public static Server getServerById(String id) {
+        return WorkerReceiver.getCoreService(ServerDataService.class).getLocalCachedServers().get(id);
+    }
+
+    public static Map<String, Server> getServersByCondition(BiFunction<String, Server, Boolean> function) {
+        ServerDataService serverDataService = WorkerReceiver.getCoreService(ServerDataService.class);
+        Map<String, Pair<Server, LocalDateTime>> data = serverDataService.getLocalCachedServers().getData();
+        List<String> ids = data.keySet().stream().filter(id -> function.apply(id, data.get(id).getFirst())).collect(Collectors.toList());
+        Map<String, Server> servers = new HashMap<>();
+        for (String id : ids) {
+            servers.put(id, getServerById(id));
+        }
+        return servers;
+    }
 
     @Nullable
     public Object getLocalValue(String key) {
@@ -52,7 +79,8 @@ public class Server implements CloudData {
         }
         Object object = directCloud.get(DirectCloudStorage.SERVER, "id", id, "data");
         if (object == null) return Maps.newHashMap();
-        Type type = new TypeToken<Map<String, Object>>() {}.getType();
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
         return directCloud.getGson().fromJson((String) object, type);
     }
 
@@ -88,9 +116,18 @@ public class Server implements CloudData {
         return (int) cloudValue;
     }
 
-    @SuppressWarnings("all")
-    @NotNull
-    public static Server local() {
-        return WorkerReceiver.getCoreService(ServerDataService.class).getServer();
+    public CompletableFuture<LocalServerInfo> getServerInfo() {
+        return CompletableFuture.supplyAsync(() -> {
+            String ip = (String) getCloudValue("ip");
+            Object rawPort = getCloudValue("port");
+            int port;
+            if (rawPort == null) {
+                port = 0;
+            } else {
+                port = (int) rawPort;
+            }
+            return new LocalServerInfo(ip, port);
+        });
     }
+
 }

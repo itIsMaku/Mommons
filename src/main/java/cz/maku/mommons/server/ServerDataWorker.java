@@ -1,5 +1,6 @@
 package cz.maku.mommons.server;
 
+import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
 import cz.maku.mommons.cache.ExpiringMap;
 import cz.maku.mommons.storage.database.SQLRow;
@@ -30,7 +31,7 @@ public class ServerDataWorker {
             Type type = new TypeToken<Map<String, Object>>() {
             }.getType();
             Map<String, Object> data = GSON.fromJson(row.getString("data"), type);
-            localCachedServers.renew(id, new Server(id));
+            localCachedServers.renew(id, new Server(id, data, Maps.newHashMap()));
         }
     }
 

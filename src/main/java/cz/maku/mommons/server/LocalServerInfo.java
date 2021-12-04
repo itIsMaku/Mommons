@@ -25,6 +25,11 @@ public class LocalServerInfo {
         this.port = Bukkit.getServer().getPort();
     }
 
+    public LocalServerInfo(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
+    }
+
     @SuppressWarnings("all")
     @NotNull
     public static LocalServerInfo local() {
