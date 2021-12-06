@@ -21,13 +21,8 @@ public class LocalServerInfo {
         URL url = new URL("https://api.ipify.org?format=json");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
         String json = bufferedReader.readLine().trim();
-        this.ip = new JsonParser().parse(json).getAsJsonObject().getAsString();
+        this.ip = new JsonParser().parse(json).getAsJsonObject().get("ip").getAsString();
         this.port = Bukkit.getServer().getPort();
-    }
-
-    public LocalServerInfo(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
     }
 
     @SuppressWarnings("all")
