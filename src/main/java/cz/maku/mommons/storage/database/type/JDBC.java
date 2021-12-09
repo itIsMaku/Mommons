@@ -1,6 +1,7 @@
 package cz.maku.mommons.storage.database.type;
 
 import cz.maku.mommons.storage.database.Database;
+import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -44,9 +45,10 @@ public class JDBC implements Database<Connection> {
         return false;
     }
 
+    @SneakyThrows
     @Override
     public boolean isConnected() {
-        return connection != null;
+        return connection != null && !connection.isClosed();
     }
 
     @Override

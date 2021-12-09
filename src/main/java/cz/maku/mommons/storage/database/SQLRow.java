@@ -36,8 +36,4 @@ public class SQLRow {
     public <T> T getObjectFromJSON(Class<T> tClass, String column) {
         return new GsonBuilder().create().fromJson(getString(column), tClass);
     }
-
-    public <V> V get(String column) {
-        return (V) columns.get(column);
-    }
 }

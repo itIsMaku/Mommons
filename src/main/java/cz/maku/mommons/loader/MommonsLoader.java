@@ -4,7 +4,7 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.bukkit.hologram.Hologram;
 import cz.maku.mommons.bukkit.hologram.Holograms;
-import cz.maku.mommons.server.Server;
+import cz.maku.mommons.server.ServerDataRepository;
 import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.CachedCloud;
 import cz.maku.mommons.storage.cloud.DirectCloud;
@@ -34,7 +34,7 @@ public class MommonsLoader extends WorkerPlugin {
 
     @Override
     public List<Class<?>> registerServices() {
-        return Lists.newArrayList(CachedCloud.class, PlayerCloud.class, DirectCloud.class, NetworkTokenService.class, ServerDataService.class);
+        return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, PlayerCloud.class, NetworkTokenService.class);
     }
 
     @Override
@@ -82,6 +82,17 @@ public class MommonsLoader extends WorkerPlugin {
         serversData.addColumn("id", String.class);
         serversData.addColumn("data", String.class);
         serversData.create();
+
+        SQLTable networkTokens = new SQLTable("mommons_networktokens", MySQL.getApi());
+        networkTokens.addColumn("target_server", String.class);
+        networkTokens.addColumn("token", String.class);
+        networkTokens.addColumn("token_data", String.class);
+        networkTokens.addColumn("action_id", String.class);
+        networkTokens.addColumn("expire", Integer.class);
+        networkTokens.addColumn("unit", String.class);
+        networkTokens.addColumn("executed", Integer.class);
+        networkTokens.addColumn("sent", String.class);
+        networkTokens.create();
     }
 
     @Override

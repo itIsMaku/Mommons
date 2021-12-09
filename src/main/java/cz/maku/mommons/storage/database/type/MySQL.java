@@ -26,6 +26,9 @@ public class MySQL extends JDBC {
     }
 
     public List<SQLRow> query(String table, String sql, Object... objects) {
+        if (!isConnected()) {
+            throw new RuntimeException("MySQL is not connected!");
+        }
         try {
             if (!getConnection().isValid(60000)) {
                 disconnect();

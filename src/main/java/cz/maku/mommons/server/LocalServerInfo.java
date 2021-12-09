@@ -1,15 +1,12 @@
 package cz.maku.mommons.server;
 
-import com.google.gson.JsonParser;
+import cz.maku.mommons.utils.Nets;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 
 @Getter
 public class LocalServerInfo {
@@ -17,11 +14,13 @@ public class LocalServerInfo {
     private final String ip;
     private final int port;
 
+    public LocalServerInfo(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
+    }
+
     public LocalServerInfo() throws IOException {
-        URL url = new URL("https://api.ipify.org?format=json");
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
-        String json = bufferedReader.readLine().trim();
-        this.ip = new JsonParser().parse(json).getAsJsonObject().get("ip").getAsString();
+        this.ip = Nets.getAddress();
         this.port = Bukkit.getServer().getPort();
     }
 
