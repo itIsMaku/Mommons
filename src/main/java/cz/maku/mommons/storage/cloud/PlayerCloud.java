@@ -4,12 +4,15 @@ import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.Service;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Deprecated
 @Service
+@ApiStatus.ScheduledForRemoval
 public class PlayerCloud {
 
     public void set(String key, String value, Player player) {

@@ -4,6 +4,7 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.bukkit.hologram.Hologram;
 import cz.maku.mommons.bukkit.hologram.Holograms;
+import cz.maku.mommons.player.PlayerDataRepository;
 import cz.maku.mommons.server.ServerDataRepository;
 import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.CachedCloud;
@@ -34,7 +35,7 @@ public class MommonsLoader extends WorkerPlugin {
 
     @Override
     public List<Class<?>> registerServices() {
-        return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, PlayerCloud.class, NetworkTokenService.class);
+        return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, PlayerCloud.class, NetworkTokenService.class, PlayerDataRepository.class);
     }
 
     @Override

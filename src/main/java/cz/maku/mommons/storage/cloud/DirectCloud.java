@@ -23,7 +23,7 @@ public class DirectCloud {
 
     @NotNull
     public Response insert(DirectCloudStorage directCloudStorage, String keyColumn, Object key, String valueColumn, Object value) {
-        if (directCloudStorage.equals(DirectCloudStorage.SERVER)) {
+        if (directCloudStorage.equals(DirectCloudStorage.SERVER) || directCloudStorage.equals(DirectCloudStorage.PLAYER)) {
             try {
                 MySQL.getApi().query(directCloudStorage.getSqlTable(), String.format("INSERT INTO {table} (%s, %s) VALUES (?, ?);", keyColumn, valueColumn), key, value);
                 return new Response(Response.Code.SUCCESS, null);
@@ -37,7 +37,7 @@ public class DirectCloud {
 
     @NotNull
     public Response update(DirectCloudStorage directCloudStorage, String keyColumn, Object key, String valueColumn, Object value) {
-        if (directCloudStorage.equals(DirectCloudStorage.SERVER)) {
+        if (directCloudStorage.equals(DirectCloudStorage.SERVER) || directCloudStorage.equals(DirectCloudStorage.PLAYER)) {
             try {
                 MySQL.getApi().query(directCloudStorage.getSqlTable(), String.format("UPDATE {table} SET %s = ? WHERE %s = ?;", valueColumn, keyColumn), value, key);
                 return new Response(Response.Code.SUCCESS, null);
@@ -51,7 +51,7 @@ public class DirectCloud {
 
     @Nullable
     public Object get(DirectCloudStorage directCloudStorage, String keyColumn, Object key, String valueColumn) {
-        if (directCloudStorage.equals(DirectCloudStorage.SERVER)) {
+        if (directCloudStorage.equals(DirectCloudStorage.SERVER) || directCloudStorage.equals(DirectCloudStorage.PLAYER)) {
             try {
                 List<SQLRow> rows = MySQL.getApi().query(directCloudStorage.getSqlTable(), String.format("SELECT * FROM {table} WHERE %s = ?;", keyColumn), key);
                 if (rows.isEmpty()) return null;
