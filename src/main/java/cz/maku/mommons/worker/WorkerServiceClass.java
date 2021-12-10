@@ -2,7 +2,6 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
-import cz.maku.mommons.storage.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BukkitCommand;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
@@ -18,6 +17,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class WorkerServiceClass {
     private final Map<String, WorkerMethod> methods;
     private final Map<String, WorkerField> fields;
     private final Map<WorkerMethod, BukkitTask> tasks;
+    private final Logger logger;
 
     public WorkerServiceClass(Worker worker, Service service, Object object, Map<String, WorkerMethod> methods, Map<String, WorkerField> fields, Map<WorkerMethod, BukkitTask> tasks) {
         this.worker = worker;
@@ -43,6 +45,7 @@ public class WorkerServiceClass {
         this.methods = methods;
         this.fields = fields;
         this.tasks = tasks;
+        this.logger = LoggerFactory.getLogger(object.getClass());
     }
 
     public WorkerServiceClass(Worker worker, Service service, Object object) {
@@ -74,7 +77,7 @@ public class WorkerServiceClass {
                         workerField.setValue(worker.getSpecialServices().get(fieldType));
                     }
                 } else {
-                    WorkerLogger.error("Service " + fieldType.getName() + " can't be @Load-ed, because isn't registered.");
+                    logger.error("Cannot @Load class " + field.getName() + ". Maybe is it Service?");
                 }
             }
         }

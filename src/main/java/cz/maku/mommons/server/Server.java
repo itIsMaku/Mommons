@@ -4,15 +4,16 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
+import cz.maku.mommons.player.CloudPlayer;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
-import cz.maku.mommons.worker.WorkerLogger;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class Server implements CloudData {
     public Map<String, Object> getCloudData() {
         DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
         if (directCloud == null) {
-            WorkerLogger.error("DirectCloud is null (service from core Worker).");
+            LoggerFactory.getLogger(Server.class).warn("DirectCloud is null (service from core Worker).");
             return Maps.newHashMap();
         }
         Object object = directCloud.get(DirectCloudStorage.SERVER, "id", id, "data");

@@ -3,17 +3,15 @@ package cz.maku.mommons.worker;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.worker.annotation.*;
 import cz.maku.mommons.worker.annotation.sql.Download;
-import cz.maku.mommons.worker.exception.ServiceNotFoundException;
-import cz.maku.mommons.worker.type.ConsoleColors;
-import cz.maku.mommons.worker.type.WorkerLoggerType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -22,21 +20,18 @@ public class WorkerMethod {
 
     private final Method method;
     private final Object object;
+    private final Logger logger;
 
     public Object invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
         Parameter[] methodParameters = method.getParameters();
         if (params.length != methodParameters.length) {
-            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
-            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Parameters lengths are not same!");
-            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Official parameters: " + Arrays.toString(methodParameters));
-            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Worker parameters: " + Arrays.toString(params));
+            logger.error("Method '" + method.getName() + "' can not be invoked. Parameters lengths are not same.");
             return null;
         }
         Object[] o = new Object[methodParameters.length];
         for (int i = 0; i < params.length; i++) {
             if (!methodParameters[i].getType().isAssignableFrom(params[i].getClass())) {
-                WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
-                WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "null");
+                logger.error("Method '" + method.getName() + "' can not be invoked. Returning null.");
                 return null;
             }
             o[i] = params[i];
@@ -44,11 +39,12 @@ public class WorkerMethod {
         try {
             return method.invoke(object, o);
         } catch (Exception e) {
-            WorkerLogger.blank(WorkerLoggerType.ERROR.getPrefix() + ConsoleColors.RESET + "Method " + method.getName() + " can't be invoked.");
-            WorkerLogger.error(e);
+            logger.trace("Method '" + method.getName() + "' can not be invoked.");
+            e.printStackTrace();
             return null;
         }
     }
+
 
     @SneakyThrows
     public Object[] getLoadParameters(Worker worker) {
@@ -72,7 +68,8 @@ public class WorkerMethod {
                             objects.add(object);
                         }
                     } else {
-                        throw new ServiceNotFoundException("Service " + parameterType.getName() + " can't be @Load-ed, because isn't registered.");
+                        logger.error("Cannot @Load class " + parameterType.getName() + ". Maybe is it Service?");
+                        continue;
                     }
                 }
             }

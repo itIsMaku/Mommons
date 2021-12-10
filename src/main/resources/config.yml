@@ -5,3 +5,6 @@ username: usr
 password: psswd
 ssl: false
 auto-reconnect: true
+
+server:
+  id: Example

@@ -4,14 +4,16 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
+import cz.maku.mommons.player.CloudPlayer;
 import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
-import cz.maku.mommons.worker.WorkerLogger;
 import cz.maku.mommons.worker.annotation.Async;
 import cz.maku.mommons.worker.annotation.Load;
 import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -71,6 +73,7 @@ public class NetworkTokenService {
     @Repeat(period = 30L)
     @Async
     public void download() {
+        Logger logger = LoggerFactory.getLogger(NetworkTokenService.class);
         MySQL.getApi().queryAsync("mommons_networktokens", "SELECT * FROM {table} WHERE target_server = ? AND executed = 0;", serverDataService.getServer().getId()).thenAccept(rows -> {
             if (rows.isEmpty()) return;
             for (SQLRow row : rows) {
@@ -83,11 +86,11 @@ public class NetworkTokenService {
                 ChronoUnit unit = ChronoUnit.valueOf(row.getString("unit").toUpperCase());
                 LocalDateTime sent = GSON.fromJson(row.getString("sent"), LocalDateTime.class);
                 if (unit.between(sent, LocalDateTime.now()) > expire) {
-                    WorkerLogger.error("Token " + token + " was downloaded expired.");
+                    logger.warn("Token '" + token + "' expired during downloading.");
                     continue;
                 }
                 if (!actions.containsKey(action_id) || actions.get(action_id).isEmpty()) {
-                    WorkerLogger.error("Action id " + action_id + " does not have any registered action.");
+                    logger.error("Action ID '" + action_id + "' does not have any registered action.");
                     continue;
                 }
                 Map<String, List<Consumer<NetworkTokenAction>>> actions = this.actions.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase(action_id)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

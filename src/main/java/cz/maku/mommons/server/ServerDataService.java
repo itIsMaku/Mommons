@@ -23,6 +23,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import static cz.maku.mommons.Mommons.GSON;
+
 @Service(listener = true)
 public class ServerDataService {
 
@@ -43,7 +45,10 @@ public class ServerDataService {
         Object object = directCloud.get(DirectCloudStorage.SERVER, "id", id, "data");
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
-        server = new Server(id, directCloud.getGson().fromJson((String) object, type), Maps.newConcurrentMap());
+        if (object == null) {
+            object = GSON.toJson(Maps.newHashMap());
+        }
+        server = new Server(id, GSON.fromJson((String) object, type), Maps.newConcurrentMap());
         localServerInfo = new LocalServerInfo();
     }
 
@@ -55,7 +60,7 @@ public class ServerDataService {
             return;
         }
         server.setPlayers(Bukkit.getOnlinePlayers().size() + 1).thenAccept(response -> {
-            if (Response.isException(response)) {
+            if (Response.isException(response) || !Response.isValid(response)) {
                 e.setKickMessage("§cChyba -> §7Nepodařilo se aktualizovat počet hráčů na serveru.");
                 e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             }

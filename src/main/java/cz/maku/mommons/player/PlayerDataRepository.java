@@ -43,7 +43,7 @@ public class PlayerDataRepository {
         Object rawData = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
         if (rawData == null) {
             Response response = directCloud.insert(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(Maps.newHashMap()));
-            if (Response.isException(response)) {
+            if (Response.isException(response) || !Response.isValid(response)) {
                 if (player != null) {
                     player.kickPlayer("§cChyba -> §7Nastala chyba pri odesilani pozadavku na databazi.");
                     return null;

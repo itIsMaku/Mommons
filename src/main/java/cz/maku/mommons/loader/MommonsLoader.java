@@ -84,6 +84,11 @@ public class MommonsLoader extends WorkerPlugin {
         serversData.addColumn("data", String.class);
         serversData.create();
 
+        SQLTable playersData = new SQLTable("mommons_players", MySQL.getApi());
+        playersData.addColumn("id", String.class);
+        playersData.addColumn("data", String.class);
+        playersData.create();
+
         SQLTable networkTokens = new SQLTable("mommons_networktokens", MySQL.getApi());
         networkTokens.addColumn("target_server", String.class);
         networkTokens.addColumn("token", String.class);
