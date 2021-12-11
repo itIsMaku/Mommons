@@ -17,7 +17,9 @@ import cz.maku.mommons.worker.Worker;
 import cz.maku.mommons.worker.annotation.Plugin;
 import cz.maku.mommons.worker.plugin.WorkerPlugin;
 import lombok.Getter;
+import lombok.SneakyThrows;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 @Plugin(
@@ -52,6 +54,7 @@ public class MommonsLoader extends WorkerPlugin {
         plugin = this;
     }
 
+    @SneakyThrows
     @Override
     public void preLoad() {
         getConfig().options().copyDefaults(true);

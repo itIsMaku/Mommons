@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
-import cz.maku.mommons.player.CloudPlayer;
+import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
@@ -12,8 +12,6 @@ import cz.maku.mommons.worker.annotation.Async;
 import cz.maku.mommons.worker.annotation.Load;
 import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -23,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static cz.maku.mommons.Mommons.GSON;
@@ -70,27 +69,28 @@ public class NetworkTokenService {
         });
     }
 
-    @Repeat(period = 30L)
+    @Repeat(delay = 3 * 20, period = 30L)
     @Async
     public void download() {
-        Logger logger = LoggerFactory.getLogger(NetworkTokenService.class);
+        Logger logger = MommonsLoader.getPlugin().getLogger();
         MySQL.getApi().queryAsync("mommons_networktokens", "SELECT * FROM {table} WHERE target_server = ? AND executed = 0;", serverDataService.getServer().getId()).thenAccept(rows -> {
             if (rows.isEmpty()) return;
             for (SQLRow row : rows) {
                 String target_server = row.getString("target_server");
                 String token = row.getString("token");
-                Type type = new TypeToken<Map<String, String>>(){}.getType();
+                Type type = new TypeToken<Map<String, String>>() {
+                }.getType();
                 Map<String, String> token_data = GSON.fromJson(row.getString("token_data"), type);
                 String action_id = row.getString("action_id");
                 int expire = row.getInt("expire");
                 ChronoUnit unit = ChronoUnit.valueOf(row.getString("unit").toUpperCase());
                 LocalDateTime sent = GSON.fromJson(row.getString("sent"), LocalDateTime.class);
                 if (unit.between(sent, LocalDateTime.now()) > expire) {
-                    logger.warn("Token '" + token + "' expired during downloading.");
+                    logger.warning("Token '" + token + "' expired during downloading.");
                     continue;
                 }
                 if (!actions.containsKey(action_id) || actions.get(action_id).isEmpty()) {
-                    logger.error("Action ID '" + action_id + "' does not have any registered action.");
+                    logger.severe("Action ID '" + action_id + "' does not have any registered action.");
                     continue;
                 }
                 Map<String, List<Consumer<NetworkTokenAction>>> actions = this.actions.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase(action_id)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

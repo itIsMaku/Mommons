@@ -71,4 +71,23 @@ public final class Texts {
     public static boolean isPositiveNumber(String s) {
         return s.matches("\\d+");
     }
+
+    public static String getShortedClassName(Class<?> clazz) {
+        return getShortedClassName(clazz.getName());
+    }
+
+    public static String getShortedClassName(String name) {
+        String[] split = name.split("\\.");
+        StringBuilder output = new StringBuilder();
+        int i = 0;
+        for (String s : split) {
+            if ((i + 1) == split.length) {
+                output.append(s);
+                continue;
+            }
+            output.append(s.charAt(0)).append(".");
+            i++;
+        }
+        return output.toString();
+    }
 }

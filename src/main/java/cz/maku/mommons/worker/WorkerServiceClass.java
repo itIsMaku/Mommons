@@ -2,6 +2,7 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BukkitCommand;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
@@ -17,8 +18,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 @Getter
 public class WorkerServiceClass {
@@ -45,7 +45,7 @@ public class WorkerServiceClass {
         this.methods = methods;
         this.fields = fields;
         this.tasks = tasks;
-        this.logger = LoggerFactory.getLogger(object.getClass());
+        this.logger = MommonsLoader.getPlugin().getLogger();
     }
 
     public WorkerServiceClass(Worker worker, Service service, Object object) {
@@ -77,7 +77,7 @@ public class WorkerServiceClass {
                         workerField.setValue(worker.getSpecialServices().get(fieldType));
                     }
                 } else {
-                    logger.error("Cannot @Load class " + field.getName() + ". Maybe is it Service?");
+                    logger.severe("Cannot @Load class " + field.getName() + ". Maybe is it Service?");
                 }
             }
         }

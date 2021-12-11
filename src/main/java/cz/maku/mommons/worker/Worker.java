@@ -1,19 +1,20 @@
 package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
+import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.database.type.MySQL;
+import cz.maku.mommons.utils.Texts;
 import cz.maku.mommons.worker.annotation.Service;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Getter(AccessLevel.PROTECTED)
 public class Worker {
@@ -29,7 +30,7 @@ public class Worker {
         specialServices = new HashMap<>();
         services = new HashMap<>();
         workerClasses = new HashMap<>();
-        logger = LoggerFactory.getLogger(Worker.class);
+        logger = MommonsLoader.getPlugin().getLogger();
     }
 
     public <T> T getService(Class<T> tClass) {
@@ -41,7 +42,7 @@ public class Worker {
             if (clazz.isAnnotationPresent(Service.class)) {
                 services.put(clazz, null);
             } else {
-                logger.error("Registered service '" + clazz.getName() + "' is not annotated with @Service!");
+                logger.severe("Registered service '" + clazz.getName() + "' is not annotated with @Service!");
             }
         }
     }
@@ -55,7 +56,7 @@ public class Worker {
             if (clazz.isAnnotationPresent(Service.class)) {
                 specialServices.put(clazz, null);
             } else {
-                logger.error("Registered special service '" + clazz.getName() + "' is not annotated with @Service!");
+                logger.severe("Registered special service '" + clazz.getName() + "' is not annotated with @Service!");
             }
         }
     }
@@ -93,7 +94,7 @@ public class Worker {
     protected void initializeClass(Class<?> clazz, Object service) {
         Map<String, WorkerMethod> methods = Maps.newConcurrentMap();
         for (Method method : clazz.getDeclaredMethods()) {
-            methods.put(method.getName(), new WorkerMethod(method, service, LoggerFactory.getLogger(clazz)));
+            methods.put(method.getName(), new WorkerMethod(method, service));
         }
         Map<String, WorkerField> fields = Maps.newConcurrentMap();
         for (Field field : clazz.getDeclaredFields()) {
@@ -103,7 +104,7 @@ public class Worker {
         workerClass.initializeFields();
         workerClass.initializeMethods();
         workerClasses.put(clazz, workerClass);
-        logger.info("Service '" + clazz.getName() + "' was successfully initialized.");
+        logger.info("Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
     }
 
 }

@@ -2,8 +2,13 @@ package cz.maku.mommons.server;
 
 import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
+import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.database.SQLRow;
+import cz.maku.mommons.storage.database.type.MySQL;
+import cz.maku.mommons.worker.WorkerReceiver;
 import cz.maku.mommons.worker.annotation.Async;
+import cz.maku.mommons.worker.annotation.Load;
+import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
 import cz.maku.mommons.worker.annotation.sql.Download;
 
@@ -14,10 +19,13 @@ import java.util.concurrent.CompletableFuture;
 
 import static cz.maku.mommons.Mommons.GSON;
 
-@Service(sql = true)
+@Service(sql = true, scheduled = true)
 public class ServerDataRepository {
 
     public static final Map<String, Server> SERVERS = Maps.newConcurrentMap();
+    @Load
+    private ServerDataService serverDataService;
+
 
     @Download(table = "mommons_servers", query = "SELECT * FROM {table};", period = 20 * 5)
     @Async
@@ -43,5 +51,4 @@ public class ServerDataRepository {
             SERVERS.putAll(newServers);
         });
     }
-
 }

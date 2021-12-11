@@ -1,5 +1,6 @@
 package cz.maku.mommons.rest;
 
+import com.google.common.annotations.Beta;
 import com.google.gson.Gson;
 import cz.maku.mommons.rest.annotation.Get;
 import cz.maku.mommons.rest.annotation.Post;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.Optional;
 
+@Beta
 public final class Rests {
 
     private static final Gson gson = new Gson();
