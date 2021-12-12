@@ -21,5 +21,19 @@ public final class Schedulers {
         BUKKIT_SCHEDULER.runTaskTimerAsynchronously(SCHEDULER_SOURCE, consumer, delay, period);
     }
 
+    public static void later(Consumer<BukkitTask> consumer, long delay) {
+        BUKKIT_SCHEDULER.runTaskLater(SCHEDULER_SOURCE, consumer, delay);
+    }
 
+    public static void laterBukkitAsync(Consumer<BukkitTask> consumer, long delay) {
+        BUKKIT_SCHEDULER.runTaskLaterAsynchronously(SCHEDULER_SOURCE, consumer, delay);
+    }
+
+    public static void run(Consumer<BukkitTask> consumer) {
+        BUKKIT_SCHEDULER.runTask(SCHEDULER_SOURCE, consumer);
+    }
+
+    public static void runBukkitAsync(Consumer<BukkitTask> consumer) {
+        BUKKIT_SCHEDULER.runTaskAsynchronously(SCHEDULER_SOURCE, consumer);
+    }
 }

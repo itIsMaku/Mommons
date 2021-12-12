@@ -22,19 +22,15 @@ public class Worker {
     private final Map<Class<?>, Object> specialServices;
     private final Map<Class<?>, Object> services;
     private final Map<Class<?>, WorkerServiceClass> workerClasses;
+    private final Logger logger;
     private JavaPlugin javaPlugin;
     private MySQL mySQL;
-    private Logger logger;
 
     public Worker() {
         specialServices = new HashMap<>();
         services = new HashMap<>();
         workerClasses = new HashMap<>();
         logger = MommonsLoader.getPlugin().getLogger();
-    }
-
-    public <T> T getService(Class<T> tClass) {
-        return (T) workerClasses.get(tClass).getObject();
     }
 
     public void registerServices(Class<?>... classes) {
