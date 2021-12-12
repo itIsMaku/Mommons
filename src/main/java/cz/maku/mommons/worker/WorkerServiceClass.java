@@ -2,6 +2,7 @@ package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import cz.maku.mommons.bukkit.scheduler.Schedulers;
 import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BukkitCommand;
@@ -153,9 +154,9 @@ public class WorkerServiceClass {
                     }
                 };
                 if (workerMethod.isAsync()) {
-                    Bukkit.getScheduler().runTaskTimerAsynchronously(worker.getJavaPlugin(), consumer, repeat.delay(), repeat.period());
+                    Schedulers.repeatBukkitAsync(consumer, repeat.delay(), repeat.period());
                 } else {
-                    Bukkit.getScheduler().runTaskTimer(worker.getJavaPlugin(), consumer, repeat.delay(), repeat.period());
+                    Schedulers.repeat(consumer, repeat.delay(), repeat.period());
                 }
                 continue;
             }
