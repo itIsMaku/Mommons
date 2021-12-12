@@ -2,21 +2,23 @@ package cz.maku.mommons.player;
 
 import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
-import cz.maku.mommons.Mommons;
 import cz.maku.mommons.Response;
-import cz.maku.mommons.loader.MommonsLoader;
+import cz.maku.mommons.player.event.CloudPlayerLoadEvent;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
+import cz.maku.mommons.worker.annotation.Initialize;
 import cz.maku.mommons.worker.annotation.Load;
 import cz.maku.mommons.worker.annotation.Service;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static cz.maku.mommons.Mommons.GSON;
 
@@ -28,10 +30,18 @@ public class PlayerDataRepository {
     @Load
     private DirectCloud directCloud;
 
+    @Initialize
+    public void initialize() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (PLAYERS.containsKey(player.getName())) continue;
+            initializePlayerAsync(player);
+        }
+    }
+
     @BukkitEvent(PlayerJoinEvent.class)
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        PLAYERS.put(player.getName(), downloadCloudPlayer(player.getName()));
+        initializePlayerAsync(player);
     }
 
     @BukkitEvent(PlayerQuitEvent.class)
@@ -40,6 +50,7 @@ public class PlayerDataRepository {
         PLAYERS.remove(player.getName());
     }
 
+    @Nullable
     public CloudPlayer downloadCloudPlayer(String nickname) {
         Player player = Bukkit.getPlayer(nickname);
         Object rawData = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
@@ -57,5 +68,22 @@ public class PlayerDataRepository {
         }.getType();
         Map<String, Object> data = GSON.fromJson((String) rawData, type);
         return new CloudPlayer(player, data, Maps.newHashMap());
+    }
+
+    public CompletableFuture<@Nullable CloudPlayer> downloadCloudPlayerAsync(String nickname) {
+        return CompletableFuture.supplyAsync(() -> downloadCloudPlayer(nickname));
+    }
+
+    private void initializePlayerAsync(Player player) {
+        downloadCloudPlayerAsync(player.getName()).thenAccept(cloudPlayer -> {
+            PLAYERS.put(player.getName(), cloudPlayer);
+            CloudPlayerLoadEvent cloudPlayerLoadEvent = new CloudPlayerLoadEvent(player, cloudPlayer);
+            if (cloudPlayer == null) {
+                cloudPlayerLoadEvent.setCancel(true);
+            }
+            if (!cloudPlayerLoadEvent.isCancel()) {
+                Bukkit.getPluginManager().callEvent(cloudPlayerLoadEvent);
+            }
+        });
     }
 }
