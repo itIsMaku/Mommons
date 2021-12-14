@@ -8,8 +8,10 @@ import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
+import cz.maku.mommons.storage.local.LocalData;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,13 +23,15 @@ import java.util.concurrent.CompletableFuture;
 import static cz.maku.mommons.Mommons.GSON;
 
 @AllArgsConstructor
-public class CloudPlayer implements CloudData {
+public class CloudPlayer implements CloudData, LocalData {
 
     @NotNull
     private final Player player;
     @NotNull
+    @Getter
     private final Map<String, Object> cachedData;
     @NotNull
+    @Getter
     private final Map<String, Object> localData;
 
     @Nullable
@@ -77,6 +81,7 @@ public class CloudPlayer implements CloudData {
     }
 
     @Override
+    @Nullable
     public Object getCloudValue(String key) {
         Map<String, Object> cloudData = getCloudData();
         return cloudData.get(key);
@@ -105,5 +110,16 @@ public class CloudPlayer implements CloudData {
                 return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
             }
         });
+    }
+
+    @Override
+    @Nullable
+    public Object getLocalValue(String key) {
+        return localData.get(key);
+    }
+
+    @Override
+    public Response setLocalValue(String key, Object value) {
+        return null;
     }
 }

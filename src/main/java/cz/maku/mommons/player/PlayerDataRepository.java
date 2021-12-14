@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.player.event.CloudPlayerLoadEvent;
+import cz.maku.mommons.player.event.CloudPlayerPreUnloadEvent;
+import cz.maku.mommons.player.event.CloudPlayerUnloadEvent;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
@@ -47,7 +49,13 @@ public class PlayerDataRepository {
     @BukkitEvent(PlayerQuitEvent.class)
     public void onQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
+        CloudPlayer cloudPlayer = CloudPlayer.getInstance(player);
+        if (cloudPlayer == null) return;
+        CloudPlayerPreUnloadEvent cloudPlayerPreUnLoadEvent = new CloudPlayerPreUnloadEvent(player, cloudPlayer);
+        Bukkit.getPluginManager().callEvent(cloudPlayerPreUnLoadEvent);
         PLAYERS.remove(player.getName());
+        CloudPlayerUnloadEvent cloudPlayerUnloadEvent = new CloudPlayerUnloadEvent(player);
+        Bukkit.getPluginManager().callEvent(cloudPlayerUnloadEvent);
     }
 
     @Nullable
@@ -79,9 +87,9 @@ public class PlayerDataRepository {
             PLAYERS.put(player.getName(), cloudPlayer);
             CloudPlayerLoadEvent cloudPlayerLoadEvent = new CloudPlayerLoadEvent(player, cloudPlayer);
             if (cloudPlayer == null) {
-                cloudPlayerLoadEvent.setCancel(true);
+                cloudPlayerLoadEvent.setCancelled(true);
             }
-            if (!cloudPlayerLoadEvent.isCancel()) {
+            if (!cloudPlayerLoadEvent.isCancelled()) {
                 Bukkit.getPluginManager().callEvent(cloudPlayerLoadEvent);
             }
         });
