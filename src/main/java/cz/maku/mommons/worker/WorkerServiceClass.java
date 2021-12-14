@@ -5,10 +5,7 @@ import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.bukkit.scheduler.Schedulers;
 import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.database.type.MySQL;
-import cz.maku.mommons.worker.annotation.BukkitCommand;
-import cz.maku.mommons.worker.annotation.BukkitEvent;
-import cz.maku.mommons.worker.annotation.Repeat;
-import cz.maku.mommons.worker.annotation.Service;
+import cz.maku.mommons.worker.annotation.*;
 import cz.maku.mommons.worker.annotation.sql.Download;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -25,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Getter
 public class WorkerServiceClass {
@@ -218,8 +217,43 @@ public class WorkerServiceClass {
         commandMap.register(fallbackPrefix, cmd);
     }
 
+    @SneakyThrows
     public void destroy() {
-
+        List<WorkerMethod> destroyers = methods.values().stream().filter(WorkerMethod::isDestroy).collect(Collectors.toList());
+        for (WorkerMethod destroyer : destroyers) {
+            Destroy destroy = destroyer.getMethod().getAnnotation(Destroy.class);
+            long delay = destroy.delay();
+            if (delay < 1) {
+                if (destroyer.isAsync()) {
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            destroyer.invoke(new Object[]{});
+                        } catch (InvocationTargetException | IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } else {
+                    destroyer.invoke(new Object[]{});
+                }
+            } else {
+                if (destroyer.isAsync()) {
+                    Schedulers.laterBukkitAsync(task -> {
+                        try {
+                            destroyer.invoke(new Object[]{});
+                        } catch (InvocationTargetException | IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }, delay);
+                }
+                Schedulers.later(task -> {
+                    try {
+                        destroyer.invoke(new Object[]{});
+                    } catch (InvocationTargetException | IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }, delay);
+            }
+        }
     }
 
 }

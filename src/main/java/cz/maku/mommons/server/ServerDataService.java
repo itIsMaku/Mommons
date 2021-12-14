@@ -58,6 +58,7 @@ public class ServerDataService {
             Map<String, Object> oldCloudData = GSON.fromJson((String) object, type);
             server = new Server(id, oldCloudData, Maps.newConcurrentMap());
             server.setCloudValue("server-info", GSON.toJson(localServerInfo));
+            server.setType("unknown");
         }, 20 * 1);
     }
 

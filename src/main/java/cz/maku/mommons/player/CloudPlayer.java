@@ -5,6 +5,9 @@ import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.loader.MommonsLoader;
+import cz.maku.mommons.server.Server;
+import cz.maku.mommons.server.ServerData;
+import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
@@ -120,6 +123,17 @@ public class CloudPlayer implements CloudData, LocalData {
 
     @Override
     public Response setLocalValue(String key, Object value) {
-        return null;
+        return setLocalValueWithResponse(key, value, localData);
+    }
+
+    public Player bukkit() {
+        return player;
+    }
+
+    @Nullable
+    public Server getConnectedServer() {
+        Object raw = getCloudValue("connected-server");
+        if (raw == null) return null;
+        return ServerData.getServer((String) raw);
     }
 }

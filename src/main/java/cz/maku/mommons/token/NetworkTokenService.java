@@ -17,6 +17,7 @@ import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -67,6 +68,10 @@ public class NetworkTokenService {
                 return new ExceptionResponse(Response.Code.ERROR, "Exception while query.", e);
             }
         });
+    }
+
+    public CompletableFuture<Response> sendToken(String targetServer, Token token, int expire, ChronoUnit unit) {
+        return sendTokens(targetServer, Collections.singletonList(token), expire, unit);
     }
 
     @Repeat(delay = 3 * 20, period = 30L)

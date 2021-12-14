@@ -4,8 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.reflect.TypeToken;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.player.event.CloudPlayerLoadEvent;
-import cz.maku.mommons.player.event.CloudPlayerPreUnloadEvent;
-import cz.maku.mommons.player.event.CloudPlayerUnloadEvent;
+import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
@@ -31,6 +30,8 @@ public class PlayerDataRepository {
 
     @Load
     private DirectCloud directCloud;
+    @Load
+    private ServerDataService serverDataService;
 
     @Initialize
     public void initialize() {
@@ -91,6 +92,9 @@ public class PlayerDataRepository {
             }
             if (!cloudPlayerLoadEvent.isCancelled()) {
                 Bukkit.getPluginManager().callEvent(cloudPlayerLoadEvent);
+            }
+            if (cloudPlayer != null) {
+                cloudPlayer.setCloudValue("connected-server", serverDataService.getServer().getId());
             }
         });
     }
