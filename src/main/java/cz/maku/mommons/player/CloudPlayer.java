@@ -8,6 +8,7 @@ import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
+import cz.maku.mommons.storage.local.LocalData;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
@@ -21,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import static cz.maku.mommons.Mommons.GSON;
 
 @AllArgsConstructor
-public class CloudPlayer implements CloudData {
+public class CloudPlayer implements CloudData, LocalData {
 
     @NotNull
     private final Player player;
@@ -105,5 +106,26 @@ public class CloudPlayer implements CloudData {
                 return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
             }
         });
+    }
+
+    @Override
+    @Nullable
+    public Object getLocalValue(String key) {
+        return localData.get(key);
+    }
+
+    @Override
+    public Response setLocalValue(String key, Object value) {
+        try {
+            if (localData.containsKey(key) && value == null) {
+                localData.remove(key);
+                return new Response(Response.Code.SUCCESS, null);
+            }
+            localData.put(key, value);
+            return new Response(Response.Code.SUCCESS, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ExceptionResponse(Response.Code.ERROR, "There is an exception during setting local value.", e);
+        }
     }
 }

@@ -8,6 +8,7 @@ import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
+import cz.maku.mommons.storage.local.LocalData;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ import static cz.maku.mommons.Mommons.GSON;
 
 @RequiredArgsConstructor
 @Getter
-public class Server implements CloudData {
+public class Server implements CloudData, LocalData {
 
     @NotNull
     private final String id;
@@ -36,19 +37,6 @@ public class Server implements CloudData {
     @NotNull
     public static Server local() {
         return WorkerReceiver.getCoreService(ServerDataService.class).getServer();
-    }
-
-    @Nullable
-    public Object getLocalValue(String key) {
-        return localData.get(key);
-    }
-
-    public void setLocalValue(String key, Object value) {
-        if (localData.containsKey(key) && value == null) {
-            localData.remove(key);
-            return;
-        }
-        localData.put(key, value);
     }
 
     @NotNull
@@ -131,4 +119,24 @@ public class Server implements CloudData {
         return setCloudValue("server-type", type);
     }
 
+    @Override
+    @Nullable
+    public Object getLocalValue(String key) {
+        return localData.get(key);
+    }
+
+    @Override
+    public Response setLocalValue(String key, Object value) {
+        try {
+            if (localData.containsKey(key) && value == null) {
+                localData.remove(key);
+                return new Response(Response.Code.SUCCESS, null);
+            }
+            localData.put(key, value);
+            return new Response(Response.Code.SUCCESS, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ExceptionResponse(Response.Code.ERROR, "There is an exception during setting local value.", e);
+        }
+    }
 }
