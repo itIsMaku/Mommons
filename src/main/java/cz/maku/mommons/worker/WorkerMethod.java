@@ -48,6 +48,7 @@ public class WorkerMethod {
 
     @SneakyThrows
     public Object[] getLoadParameters(Worker worker) {
+        Logger logger = MommonsLoader.getPlugin().getLogger();
         List<Object> objects = Lists.newArrayList();
         for (Parameter parameter : method.getParameters()) {
             if (parameter.isAnnotationPresent(Load.class)) {
@@ -68,7 +69,7 @@ public class WorkerMethod {
                             objects.add(object);
                         }
                     } else {
-                        //logger.error("Cannot @Load class " + parameterType.getName() + ". Maybe is it Service?");
+                        logger.severe("Cannot @Load class " + parameterType.getName() + ". Maybe is it Service?");
                         continue;
                     }
                 }
@@ -107,6 +108,10 @@ public class WorkerMethod {
 
     public boolean isSqlDownload() {
         return method.isAnnotationPresent(Download.class);
+    }
+
+    public boolean isDestroy() {
+        return method.isAnnotationPresent(Destroy.class);
     }
 
 }

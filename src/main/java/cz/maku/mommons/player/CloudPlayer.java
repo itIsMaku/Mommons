@@ -5,12 +5,16 @@ import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.loader.MommonsLoader;
+import cz.maku.mommons.server.Server;
+import cz.maku.mommons.server.ServerData;
+import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
 import cz.maku.mommons.storage.local.LocalData;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,8 +31,10 @@ public class CloudPlayer implements CloudData, LocalData {
     @NotNull
     private final Player player;
     @NotNull
+    @Getter
     private final Map<String, Object> cachedData;
     @NotNull
+    @Getter
     private final Map<String, Object> localData;
 
     @Nullable
@@ -116,16 +122,17 @@ public class CloudPlayer implements CloudData, LocalData {
 
     @Override
     public Response setLocalValue(String key, Object value) {
-        try {
-            if (localData.containsKey(key) && value == null) {
-                localData.remove(key);
-                return new Response(Response.Code.SUCCESS, null);
-            }
-            localData.put(key, value);
-            return new Response(Response.Code.SUCCESS, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ExceptionResponse(Response.Code.ERROR, "There is an exception during setting local value.", e);
-        }
+        return setLocalValueWithResponse(key, value, localData);
+    }
+
+    public Player bukkit() {
+        return player;
+    }
+
+    @Nullable
+    public Server getConnectedServer() {
+        Object raw = getCloudValue("connected-server");
+        if (raw == null) return null;
+        return ServerData.getServer((String) raw);
     }
 }

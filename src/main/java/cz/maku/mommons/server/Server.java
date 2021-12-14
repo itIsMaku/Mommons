@@ -127,16 +127,6 @@ public class Server implements CloudData, LocalData {
 
     @Override
     public Response setLocalValue(String key, Object value) {
-        try {
-            if (localData.containsKey(key) && value == null) {
-                localData.remove(key);
-                return new Response(Response.Code.SUCCESS, null);
-            }
-            localData.put(key, value);
-            return new Response(Response.Code.SUCCESS, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ExceptionResponse(Response.Code.ERROR, "There is an exception during setting local value.", e);
-        }
+        return setLocalValueWithResponse(key, value, localData);
     }
 }

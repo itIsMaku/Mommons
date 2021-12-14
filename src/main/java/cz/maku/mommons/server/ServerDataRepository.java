@@ -23,9 +23,6 @@ import static cz.maku.mommons.Mommons.GSON;
 public class ServerDataRepository {
 
     public static final Map<String, Server> SERVERS = Maps.newConcurrentMap();
-    @Load
-    private ServerDataService serverDataService;
-
 
     @Download(table = "mommons_servers", query = "SELECT * FROM {table};", period = 20 * 5)
     @Async
