@@ -64,6 +64,11 @@ public class ServerDataService {
 
     @BukkitEvent(AsyncPlayerPreLoginEvent.class)
     public void onPreLogin(AsyncPlayerPreLoginEvent e) {
+        if (server == null) {
+            e.setKickMessage("§cChyba -> §7Na server se nelze připojit, načítá se.");
+            e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
+            return;
+        }
         if (!MySQL.getApi().isConnected()) {
             e.setKickMessage("§cChyba -> §7Na server se nelze připojit, nepodařilo se spojit s databází.");
             e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
