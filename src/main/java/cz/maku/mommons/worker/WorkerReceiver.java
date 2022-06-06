@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class WorkerReceiver {
+public final class WorkerReceiver {
 
     @Nullable
     public static Worker getWorker(Class<? extends WorkerPlugin> pluginClass) {
