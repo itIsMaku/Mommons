@@ -48,7 +48,9 @@ public class MySQL extends JDBC {
                 return new ArrayList<>();
             } else {
                 st.executeUpdate();
-                rs = st.executeQuery("SELECT * FROM {table};".replace("{table}", table));
+                //rs = st.executeQuery("SELECT * FROM {table} WHERE ;".replace("{table}", table));
+                st.close();
+                return new ArrayList<>();
             }
             List<SQLRow> result = new ArrayList<>();
             while (rs.next()) {
