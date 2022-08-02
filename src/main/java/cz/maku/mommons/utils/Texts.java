@@ -90,4 +90,24 @@ public final class Texts {
         }
         return output.toString();
     }
+
+    public static String removeBukkitColors(String string) {
+        for (ChatColor value : ChatColor.values()) {
+            string = string.replace("§" + value.getChar(), "");
+        }
+        return string;
+    }
+
+    public static String createBar(double required, double current, String completed, String need, int linesCount) {
+        double progress_percentage = current / required;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < linesCount; i++) {
+            if (i < linesCount * progress_percentage) {
+                sb.append(completed);
+            } else {
+                sb.append(need);
+            }
+        }
+        return sb.toString();
+    }
 }

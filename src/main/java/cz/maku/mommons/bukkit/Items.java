@@ -84,4 +84,9 @@ public final class Items {
         if (meta.getLore() == null) return false;
         return Texts.contains(meta.getLore(), s);
     }
+
+    public static int getNumberFromDisplayName(ItemStack item) {
+        if (item.getItemMeta() == null) return 0;
+        return Integer.parseInt(Texts.removeBukkitColors(item.getItemMeta().getDisplayName()).replaceAll("[^0-9?!\\.:]", ""));
+    }
 }
