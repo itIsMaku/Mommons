@@ -61,7 +61,6 @@ public class Server implements CloudData, LocalData {
     }
 
     @Override
-    @Nullable
     public CompletableFuture<Response> setCloudValue(String key, Object value) {
         DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
         if (directCloud == null)
