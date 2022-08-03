@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'cz.maku'
-version '1.0'
+version '1.1'
 
 sourceSets {
     ap {
@@ -54,4 +55,22 @@ compileJava.options.encoding = 'UTF-8'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url 'https://repo.repsy.io/mvn/itismaku/private/'
+            credentials {
+                username repsyUsername
+                password repsyPassword
+            }
+        }
+    }
 }
