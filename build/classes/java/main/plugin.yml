@@ -6,4 +6,4 @@ api-version: 1.17
 description: Plugin what loads every plugin depends on Mommons
 website: www.maku.website
 depend: []
-softdepend: []
+softdepend: [HolographicDisplays]

@@ -22,6 +22,7 @@ public class Worker {
     private final Map<Class<?>, Object> specialServices;
     private final Map<Class<?>, Object> services;
     private final Map<Class<?>, WorkerServiceClass> workerClasses;
+    @Getter(AccessLevel.PUBLIC)
     private final Logger logger;
     private JavaPlugin javaPlugin;
     private MySQL mySQL;
@@ -68,6 +69,9 @@ public class Worker {
     }
 
     public void stop() {
+        for (Map.Entry<Class<?>, WorkerServiceClass> e : workerClasses.entrySet()) {
+            e.getValue().destroy();
+        }
         specialServices.clear();
         services.clear();
         javaPlugin = null;

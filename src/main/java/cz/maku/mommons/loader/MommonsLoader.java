@@ -1,6 +1,5 @@
 package cz.maku.mommons.loader;
 
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.bukkit.hologram.Hologram;
 import cz.maku.mommons.bukkit.hologram.Holograms;
@@ -18,8 +17,8 @@ import cz.maku.mommons.worker.annotation.Plugin;
 import cz.maku.mommons.worker.plugin.WorkerPlugin;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.bukkit.Bukkit;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 @Plugin(
@@ -28,6 +27,7 @@ import java.util.List;
         authors = {"itIsMaku"},
         description = "Plugin what loads every plugin depends on Mommons",
         version = "1.1",
+        softDepends = "HolographicDisplays",
         apiVersion = "1.17"
 )
 public class MommonsLoader extends WorkerPlugin {
@@ -110,10 +110,12 @@ public class MommonsLoader extends WorkerPlugin {
 
     @Override
     public void onUnload() {
-        for (Hologram hologram : Holograms.getHolograms().values()) {
-            hologram.delete();
+        if (Bukkit.getPluginManager().getPlugin("HolographicDisplays") != null) {
+            for (Hologram hologram : Holograms.getHolograms().values()) {
+                hologram.delete();
+            }
+            Holograms.unregisterPlaceholders(this);
         }
-        HologramsAPI.unregisterPlaceholders(this);
         MySQL.getApi().disconnect();
     }
 }

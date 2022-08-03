@@ -90,4 +90,16 @@ public final class Texts {
         }
         return output.toString();
     }
+
+    public static String underscore(String s) {
+        StringBuilder temp = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                temp.append("_");
+            }
+            temp.append(Character.toLowerCase(c));
+        }
+        return temp.toString();
+    }
+
 }

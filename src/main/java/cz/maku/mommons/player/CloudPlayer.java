@@ -12,9 +12,9 @@ import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
 import cz.maku.mommons.storage.local.LocalData;
+import cz.maku.mommons.worker.Worker;
 import cz.maku.mommons.worker.WorkerReceiver;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +29,10 @@ import static cz.maku.mommons.Mommons.GSON;
 public class CloudPlayer implements CloudData, LocalData {
 
     @NotNull
-    private final Player player;
+    @Getter
+    @Setter(AccessLevel.PROTECTED)
+    private String nickname;
+    private Player player;
     @NotNull
     @Getter
     private final Map<String, Object> cachedData;
@@ -66,7 +69,7 @@ public class CloudPlayer implements CloudData, LocalData {
     }
 
     public static CompletableFuture<@Nullable CloudPlayer> getInstanceOrDownloadAsync(Player player) {
-        return CompletableFuture.supplyAsync(() -> getInstanceOrDownload(player.getName()));
+        return getInstanceOrDownloadAsync(player.getName());
     }
 
     @NotNull
@@ -76,7 +79,7 @@ public class CloudPlayer implements CloudData, LocalData {
             MommonsLoader.getPlugin().getLogger().warning("DirectCloud is null (service from core Worker).");
             return Maps.newHashMap();
         }
-        Object object = directCloud.get(DirectCloudStorage.SERVER, "id", player.getName(), "data");
+        Object object = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
         if (object == null) return Maps.newHashMap();
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
@@ -91,7 +94,9 @@ public class CloudPlayer implements CloudData, LocalData {
     }
 
     @Override
-    public CompletableFuture<Response> setCloudValue(String key, Object value) {
+    @NotNull
+    public CompletableFuture<@NotNull Response> setCloudValue(String key, Object value) {
+        WorkerReceiver.getCoreWorker().getLogger().warning(String.format("SetCloudValue for player %s: %s -> %s", nickname, key, value));
         DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
         if (directCloud == null)
             return CompletableFuture.completedFuture(new Response(Response.Code.ERROR, "DirectCloud is null (service from core Worker)."));
@@ -100,13 +105,13 @@ public class CloudPlayer implements CloudData, LocalData {
                 Map<String, Object> data = getCloudData();
                 if (data.containsKey(key) && value == null) {
                     data.remove(key);
-                    return directCloud.update(DirectCloudStorage.SERVER, "id", player.getName(), "data", GSON.toJson(data));
+                    return directCloud.update(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(data));
                 }
                 data.put(key, value);
                 if (!data.containsKey(key)) {
-                    return directCloud.insert(DirectCloudStorage.SERVER, "id", player.getName(), "data", GSON.toJson(data));
+                    return directCloud.insert(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(data));
                 } else {
-                    return directCloud.update(DirectCloudStorage.SERVER, "id", player.getName(), "data", GSON.toJson(data));
+                    return directCloud.update(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(data));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -128,6 +133,10 @@ public class CloudPlayer implements CloudData, LocalData {
 
     public Player bukkit() {
         return player;
+    }
+
+    protected void setBukkit(Player player) {
+        this.player = player;
     }
 
     @Nullable

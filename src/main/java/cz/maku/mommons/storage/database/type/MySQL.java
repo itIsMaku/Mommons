@@ -48,7 +48,9 @@ public class MySQL extends JDBC {
                 return new ArrayList<>();
             } else {
                 st.executeUpdate();
-                rs = st.executeQuery("SELECT * FROM {table};".replace("{table}", table));
+                //rs = st.executeQuery("SELECT * FROM {table};".replace("{table}", table));
+                st.close();
+                return new ArrayList<>();
             }
             List<SQLRow> result = new ArrayList<>();
             while (rs.next()) {
@@ -72,5 +74,10 @@ public class MySQL extends JDBC {
 
     public CompletableFuture<List<SQLRow>> queryAsync(String table, String sql, Object... objects) {
         return CompletableFuture.supplyAsync(() -> query(table, sql, objects));
+    }
+
+    public boolean existRow(String table, String column, Object clause) {
+        List<SQLRow> rows = query(table, String.format("SELECT * FROM {table} WHERE %s = ?", column), clause);
+        return !rows.isEmpty();
     }
 }

@@ -15,6 +15,7 @@ import cz.maku.mommons.worker.annotation.Load;
 import cz.maku.mommons.worker.annotation.Service;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.Nullable;
@@ -39,14 +40,33 @@ public class PlayerDataRepository {
     public void initialize() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (PLAYERS.containsKey(player.getName())) continue;
-            initializePlayerAsync(player);
+            initializePlayerAsync(player.getName());
+        }
+    }
+
+    @BukkitEvent(AsyncPlayerPreLoginEvent.class)
+    public void onPreLogin(AsyncPlayerPreLoginEvent e) {
+        if (e.getLoginResult().equals(AsyncPlayerPreLoginEvent.Result.ALLOWED)) {
+            initializePlayerAsync(e.getName());
         }
     }
 
     @BukkitEvent(PlayerJoinEvent.class)
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        initializePlayerAsync(player);
+        load(player);
+    }
+
+    private void load(Player player) {
+        if (PLAYERS.get(player.getName()) != null) {
+            PLAYERS.get(player.getName()).setBukkit(player);
+            CloudPlayerLoadEvent cloudPlayerLoadEvent = new CloudPlayerLoadEvent(player, PLAYERS.get(player.getName()));
+            if (!cloudPlayerLoadEvent.isCancelled()) {
+                Bukkit.getPluginManager().callEvent(cloudPlayerLoadEvent);
+            }
+        } else {
+            player.kickPlayer("§cChyba -> §7Nepodařilo se nalézt tvou instanci hráče.");
+        }
     }
 
     @BukkitEvent(PlayerQuitEvent.class)
@@ -64,40 +84,25 @@ public class PlayerDataRepository {
     @Nullable
     public CloudPlayer downloadCloudPlayer(String nickname) {
         Player player = Bukkit.getPlayer(nickname);
-        Object rawData = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
-        if (rawData == null) {
-            Response response = directCloud.insert(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(Maps.newHashMap()));
-            if (Response.isException(response) || !Response.isValid(response)) {
-                if (player != null) {
-                    player.kickPlayer("§cChyba -> §7Nastala chyba pri odesilani pozadavku na databazi.");
-                    return null;
+        CompletableFuture.runAsync(() -> {
+            Object rawData = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
+            if (rawData == null) {
+                Response response = directCloud.insert(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(Maps.newHashMap()));
+                if (Response.isException(response) || !Response.isValid(response)) {
+                    if (player != null) {
+                        player.kickPlayer("§cChyba -> §7Nastala chyba pri odesilani pozadavku na databazi.");
+                    }
                 }
             }
-            rawData = GSON.toJson(Maps.newHashMap());
-        }
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        Map<String, Object> data = GSON.fromJson((String) rawData, type);
-        return new CloudPlayer(player, data, Maps.newHashMap());
-    }
-
-    public CompletableFuture<@Nullable CloudPlayer> downloadCloudPlayerAsync(String nickname) {
-        return CompletableFuture.supplyAsync(() -> downloadCloudPlayer(nickname));
-    }
-
-    private void initializePlayerAsync(Player player) {
-        downloadCloudPlayerAsync(player.getName()).thenAccept(cloudPlayer -> {
-            PLAYERS.put(player.getName(), cloudPlayer);
-            CloudPlayerLoadEvent cloudPlayerLoadEvent = new CloudPlayerLoadEvent(player, cloudPlayer);
-            if (cloudPlayer == null) {
-                cloudPlayerLoadEvent.setCancelled(true);
-            }
-            if (!cloudPlayerLoadEvent.isCancelled()) {
-                Bukkit.getPluginManager().callEvent(cloudPlayerLoadEvent);
-            }
-            if (cloudPlayer != null) {
-                cloudPlayer.setCloudValue("connected-server", serverDataService.getServer().getId());
-            }
         });
+        return new CloudPlayer(nickname, player, Maps.newHashMap(), Maps.newHashMap());
+    }
+
+    private void initializePlayerAsync(String name) {
+        //CompletableFuture.runAsync(() -> {
+        CloudPlayer cloudPlayer = downloadCloudPlayer(name);
+        PLAYERS.put(name, cloudPlayer);
+        cloudPlayer.setCloudValue("connected-server", serverDataService.getServer().getId());
+        //});
     }
 }

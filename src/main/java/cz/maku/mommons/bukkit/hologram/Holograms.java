@@ -6,6 +6,7 @@ import cz.maku.mommons.loader.MommonsLoader;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.bukkit.Location;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,10 @@ public final class Holograms {
         }
         holograms.put(id, hologram);
         return hologram;
+    }
+
+    public static void unregisterPlaceholders(Plugin plugin) {
+        HologramsAPI.unregisterPlaceholders(plugin);
     }
 
     public static void registerListener(LinesChangeListener listener) {
