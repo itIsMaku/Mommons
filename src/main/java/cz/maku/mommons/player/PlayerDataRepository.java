@@ -95,7 +95,7 @@ public class PlayerDataRepository {
                 }
             }
         });
-        return new CloudPlayer(nickname, player, Maps.newHashMap(), Maps.newHashMap());
+        return new CloudPlayer(Maps.newHashMap(), Maps.newHashMap(), nickname, player);
     }
 
     private void initializePlayerAsync(String name) {

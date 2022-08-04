@@ -30,13 +30,11 @@ public abstract class WorkerPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
             Thread.currentThread().setName("main");
         }
-        List<Plugin> plugins = Arrays.stream(Bukkit.getPluginManager().getPlugins()).filter(plugin -> {
-            String name = plugin.getDescription().getName();
-            return name.equalsIgnoreCase("Hlasovani") || name.startsWith("Matherion") || name.startsWith("Voting");
-        }).collect(Collectors.toList());
+        List<Plugin> plugins = Arrays.stream(Bukkit.getPluginManager().getPlugins()).collect(Collectors.toList());
         for (Plugin plugin : plugins) {
             createLoggerHandler(plugin.getLogger());
         }

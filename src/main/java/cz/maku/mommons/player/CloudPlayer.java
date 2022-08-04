@@ -1,20 +1,23 @@
 package cz.maku.mommons.player;
 
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.loader.MommonsLoader;
 import cz.maku.mommons.server.Server;
 import cz.maku.mommons.server.ServerData;
-import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.cloud.CloudData;
 import cz.maku.mommons.storage.cloud.DirectCloud;
 import cz.maku.mommons.storage.cloud.DirectCloudStorage;
 import cz.maku.mommons.storage.local.LocalData;
-import cz.maku.mommons.worker.Worker;
 import cz.maku.mommons.worker.WorkerReceiver;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,15 +33,15 @@ public class CloudPlayer implements CloudData, LocalData {
 
     @NotNull
     @Getter
-    @Setter(AccessLevel.PROTECTED)
-    private String nickname;
-    private Player player;
-    @NotNull
-    @Getter
     private final Map<String, Object> cachedData;
     @NotNull
     @Getter
     private final Map<String, Object> localData;
+    @NotNull
+    @Getter
+    @Setter(AccessLevel.PROTECTED)
+    private String nickname;
+    private Player player;
 
     @Nullable
     public static CloudPlayer getInstance(String nickname) {
@@ -144,5 +147,16 @@ public class CloudPlayer implements CloudData, LocalData {
         Object raw = getCloudValue("connected-server");
         if (raw == null) return null;
         return ServerData.getServer((String) raw);
+    }
+
+    public void connect(String server) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Connect");
+        out.writeUTF(server);
+        player.sendPluginMessage(MommonsLoader.getPlugin(), "BungeeCord", out.toByteArray());
+    }
+
+    public void connect(Server server) {
+        connect(server.getId());
     }
 }
