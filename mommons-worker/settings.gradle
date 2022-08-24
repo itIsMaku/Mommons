@@ -1,0 +1,3 @@
+rootProject.name("mommons-worker")
+include ':mommons-shared'
+project(":mommons-shared").projectDir = file("../mommons-shared")

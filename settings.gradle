@@ -1,0 +1,10 @@
+rootProject.name = 'Mommons'
+
+include ':mommons-worker'
+project(":mommons-worker").projectDir = file("mommons-worker")
+
+include ':mommons-spigot'
+project(":mommons-spigot").projectDir = file("mommons-spigot")
+
+include ':mommons-shared'
+project(":mommons-shared").projectDir = file("mommons-shared")
