@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+group 'cz.maku'
+version '2.0'
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "cz.maku.mommons.ef.test.Test"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":mommons-shared")
+    implementation project(":mommons-worker")
+    implementation 'com.google.code.gson:gson:2.9.1'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.jetbrains:annotations:23.0.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation 'mysql:mysql-connector-java:8.0.30'
+
+}

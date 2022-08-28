@@ -9,9 +9,35 @@ compileJava.options.encoding = 'UTF-8'
 
 repositories {
     mavenCentral()
-
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+    maven {
+        name = 'minecraft-repo'
+        url = 'https://libraries.minecraft.net/'
+    }
+    maven { url = 'https://repo.codemc.io/repository/maven-public/' }
+    maven { url = 'https://jitpack.io' }
 }
 
 dependencies {
- 
+    compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
+    implementation project(":mommons-shared")
+    implementation project(":mommons-worker")
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.jetbrains:annotations:23.0.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.google.code.gson:gson:2.9.1'
+    implementation 'commons-io:commons-io:20030203.000550'
+    implementation 'commons-codec:commons-codec:1.9'
+    compile 'com.mojang:authlib:1.5.21'
+    compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
 }

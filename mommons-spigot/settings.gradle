@@ -1,4 +1,4 @@
-rootProject.name("mommons-spigot")
+rootProject.name = "mommons-spigot"
 include ':mommons-worker'
 project(":mommons-worker").projectDir = file("../mommons-worker")
 

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 public class Mommons {
 
     public static final Gson GSON = new GsonBuilder()
+            .setLenient()
             .enableComplexMapKeySerialization()
             .create();
 

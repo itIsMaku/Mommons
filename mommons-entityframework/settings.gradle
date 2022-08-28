@@ -1,0 +1,7 @@
+rootProject.name = "mommons-entityframework"
+
+include ':mommons-shared'
+project(":mommons-shared").projectDir = file("../mommons-shared")
+
+include ':mommons-worker'
+project(":mommons-worker").projectDir = file("../mommons-worker")
