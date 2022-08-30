@@ -19,6 +19,8 @@ public class Test {
         worker.setPublicMySQL(new MySQL("127.0.0.1", 3306, "mommons", "root", "", false, true));
         worker.initialize();
         MySQL.getApi().connect();
+
+
         Repository<String, Player> repository = Repositories.createRepository(MySQL.getApi().getConnection(), Player.class);
         Player player = new Player();
         player.setName("kokot");

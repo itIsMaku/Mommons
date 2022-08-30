@@ -33,11 +33,11 @@ public interface Repository<ID, T> {
 
     void updateId(T object, ID id);
 
-    void delete(T object);
+    void delete(T object) throws IllegalAccessException;
 
     void deleteById(ID id);
 
-    void delete(Collection<T> objects);
+    void delete(Collection<T> objects) throws IllegalAccessException;
 
     void deleteIds(Collection<ID> objects);
 

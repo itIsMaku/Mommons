@@ -3,6 +3,7 @@ package cz.maku.mommons.ef.repository;
 import com.google.common.collect.Maps;
 import cz.maku.mommons.Mommons;
 import cz.maku.mommons.ef.ColumnValidator;
+import cz.maku.mommons.ef.Entities;
 import cz.maku.mommons.ef.annotation.AttributeName;
 import cz.maku.mommons.ef.annotation.Entity;
 import cz.maku.mommons.ef.annotation.Id;
@@ -99,13 +100,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         StringBuilder statement = new StringBuilder(prepareStatement("SELECT * FROM {table}"));
         Map<String, Object> conditions = Maps.newHashMap();
         for (Field field : objectClass.getDeclaredFields()) {
-            String column = field.getName();
-            if (field.isAnnotationPresent(AttributeName.class)) {
-                column = field.getAnnotation(AttributeName.class).value();
-            }
-            if (objectClass.getAnnotation(Entity.class).namePolicy().equals(NamePolicy.SQL)) {
-                column = Texts.underscore(column);
-            }
+            String column = Entities.getFieldName(objectClass, field);
             field.setAccessible(true);
             conditions.put(column, field.get(object));
         }
@@ -142,13 +137,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
             Class<?> objectClass = object.getClass();
             for (Field field : objectClass.getDeclaredFields()) {
                 i++;
-                String column = field.getName();
-                if (field.isAnnotationPresent(AttributeName.class)) {
-                    column = field.getAnnotation(AttributeName.class).value();
-                }
-                if (objectClass.getAnnotation(Entity.class).namePolicy().equals(NamePolicy.SQL)) {
-                    column = Texts.underscore(column);
-                }
+                String column = Entities.getFieldName(objectClass, field);
                 statement.append(column);
                 valuesStatement.append("?");
                 if (i < objectClass.getDeclaredFields().length) {
@@ -222,13 +211,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         int i = 0;
         for (Field field : objectClass.getDeclaredFields()) {
             i++;
-            String column = field.getName();
-            if (field.isAnnotationPresent(AttributeName.class)) {
-                column = field.getAnnotation(AttributeName.class).value();
-            }
-            if (objectClass.getAnnotation(Entity.class).namePolicy().equals(NamePolicy.SQL)) {
-                column = Texts.underscore(column);
-            }
+            String column = Entities.getFieldName(objectClass, field);
             statement.append(column).append(" = ?");
             if (i < objectClass.getDeclaredFields().length) {
                 statement.append(", ");
@@ -241,23 +224,63 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
     }
 
     @Override
-    public void delete(T object) {
-
+    public void delete(T object) throws IllegalAccessException {
+        Class<?> objectClass = object.getClass();
+        Optional<Field> optional = Entities.findEntityIdField(objectClass);
+        if (optional.isPresent()) {
+            Field field = optional.get();
+            field.setAccessible(true);
+            deleteById((ID) field.get(object));
+            return;
+        }
+        throw new RuntimeException("@Id field not found.");
     }
 
     @Override
     public void deleteById(ID id) {
-
+        MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(prepareStatement("DELETE FROM {table} WHERE {id} = ?"), StatementType.DELETE);
+        mySQLStatement.setArgumentValue(1, id);
+        mySQLStatement.complete(connection);
     }
 
     @Override
-    public void delete(Collection<T> objects) {
+    public void delete(Collection<T> objects) throws IllegalAccessException {
+        StringBuilder statement = new StringBuilder(prepareStatement("DELETE FROM {table} WHERE "));
+        int i = 0;
+        Map<Integer, Object> arguments = Maps.newHashMap();
+        for (T object : objects) {
+            Class<?> objectClass = object.getClass();
+            Optional<Field> entityIdField = Entities.findEntityIdField(objectClass);
+            if (entityIdField.isPresent()) {
+                i++;
+                Field field = entityIdField.get();
+                statement.append("{id} = ? ");
+                if (i < objects.size()) {
+                    statement.append("OR ");
+                }
+                arguments.put(i, field.get(object));
+            }
 
+        }
+        MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(statement.toString(), StatementType.DELETE, arguments);
+        mySQLStatement.complete(connection);
     }
 
     @Override
     public void deleteIds(Collection<ID> objects) {
-
+        StringBuilder statement = new StringBuilder(prepareStatement("DELETE FROM {table} WHERE "));
+        int i = 0;
+        Map<Integer, Object> arguments = Maps.newHashMap();
+        for (ID id : objects) {
+            i++;
+            statement.append("{id} = ? ");
+            if (i < objects.size()) {
+                statement.append("OR ");
+            }
+            arguments.put(i, id);
+        }
+        MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(statement.toString(), StatementType.DELETE, arguments);
+        mySQLStatement.complete(connection);
     }
 
     @Override
@@ -318,13 +341,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
             if (!ColumnValidator.validateClass(field)) {
                 throw new RuntimeException("Class " + field.getType() + ", field " + field.getName() + " is not allowed. Use @AttributeConverter to field.");
             }
-            String column = field.getName();
-            if (field.isAnnotationPresent(AttributeName.class)) {
-                column = field.getAnnotation(AttributeName.class).value();
-            }
-            if (objectClass.getAnnotation(Entity.class).namePolicy().equals(NamePolicy.SQL)) {
-                column = Texts.underscore(column);
-            }
+            String column = Entities.getFieldName(objectClass, field);
             Object value = record.getObject(column);
             if (!ColumnValidator.validateDefaultClasses(field)) {
                 TypeConverter<Object, Object> typeConverter = ColumnValidator.typeConverter(field);
