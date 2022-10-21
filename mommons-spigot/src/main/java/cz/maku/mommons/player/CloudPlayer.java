@@ -43,6 +43,13 @@ public class CloudPlayer implements CloudData, LocalData {
     private String nickname;
     private Player player;
 
+    public CloudPlayer(CloudPlayer cloudPlayer) {
+        cachedData = cloudPlayer.getCachedData();
+        localData = cloudPlayer.getLocalData();
+        nickname = cloudPlayer.getNickname();
+        player = cloudPlayer.bukkit();
+    }
+
     @Nullable
     public static CloudPlayer getInstance(String nickname) {
         return PlayerDataRepository.PLAYERS.get(nickname);
