@@ -33,10 +33,10 @@ public class BukkitWorker extends Worker {
     protected boolean make(Class<?> clazz, Object service, Map<String, WorkerMethod> methods, Map<String, WorkerField> fields) {
         WorkerServiceClass workerClass = new WorkerServiceClass(this, clazz.getAnnotation(Service.class), service, methods, fields, getLogger(), Maps.newConcurrentMap());
         WorkerBukkitServiceClass workerBukkitServiceClass = new WorkerBukkitServiceClass(this, workerClass, Maps.newConcurrentMap());
-        workerClass.initializeFields();
-        workerClass.initializeMethods();
+        workerBukkitServiceClass.initializeFields();
+        workerBukkitServiceClass.initializeMethods();
         workerClasses.put(clazz, workerBukkitServiceClass);
-        getLogger().info("Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
+        getLogger().info("Bukkit Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
         return true;
     }
 }

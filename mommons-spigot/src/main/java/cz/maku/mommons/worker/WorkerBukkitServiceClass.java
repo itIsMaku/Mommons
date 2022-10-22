@@ -45,7 +45,7 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
                 try {
                     workerMethod.invoke(new Object[]{MySQL.getApi().queryAsync(download.table(), download.query())});
                     params.clear();
-                } catch (InvocationTargetException | IllegalAccessException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }, download.delay(), download.period());

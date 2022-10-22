@@ -22,6 +22,7 @@ public class WorkerMethod {
     private final Logger logger;
 
     public Object invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
+        if (!isSqlDownload()) return null;
         Parameter[] methodParameters = method.getParameters();
         if (params.length != methodParameters.length) {
             logger.severe("Method '" + method.getName() + "' can not be invoked. Parameters lengths are not same.");
