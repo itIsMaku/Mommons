@@ -76,6 +76,7 @@ public class WorkerServiceClass {
     public void initializeMethods() {
         for (WorkerMethod workerMethod : methods.values()) {
             List<Object> params = new ArrayList<>(Arrays.asList(workerMethod.getLoadParameters(worker)));
+            System.out.println("load params");
             if (workerMethod.isInit()) {
                 if (workerMethod.isAnotherThread()) {
                     new Thread(() -> {

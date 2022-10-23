@@ -10,8 +10,10 @@ import lombok.SneakyThrows;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
@@ -22,10 +24,11 @@ public class WorkerMethod {
     private final Logger logger;
 
     public Object invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
-        if (!isSqlDownload()) return null;
         Parameter[] methodParameters = method.getParameters();
         if (params.length != methodParameters.length) {
             logger.severe("Method '" + method.getName() + "' can not be invoked. Parameters lengths are not same.");
+            logger.severe("params Length: " + params.length);
+            logger.severe("methodParameters: " + methodParameters.length);
             return null;
         }
         Object[] o = new Object[methodParameters.length];
@@ -69,7 +72,6 @@ public class WorkerMethod {
                         }
                     } else {
                         logger.severe("Cannot @Load class " + parameterType.getName() + ". Maybe is it Service?");
-                        continue;
                     }
                 }
             }

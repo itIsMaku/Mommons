@@ -95,7 +95,11 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
     @Override
     protected void nextHandlers(WorkerMethod workerMethod, List<Object> params) {
         BukkitWorkerMethod bukkitWorkerMethod = new BukkitWorkerMethod(workerMethod);
+        System.out.println("1 " + bukkitWorkerMethod.getMethod().getName());
+        System.out.println("2 " + getService().commands());
+        System.out.println("3 " + bukkitWorkerMethod.isCommand());
         if (getService().commands() && bukkitWorkerMethod.isCommand()) {
+            System.out.println("4" + bukkitWorkerMethod.getMethod().getName());
             BukkitCommand command = bukkitWorkerMethod.getMethod().getAnnotation(BukkitCommand.class);
             registerCommand(command.fallbackPrefix(), new Command(command.value(), command.description(), command.usage(), Arrays.asList(command.aliases())) {
                 @SneakyThrows
@@ -127,14 +131,19 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
             });
             return;
         }
+        System.out.println("5 " + getService().listener());
+        System.out.println("6 " + bukkitWorkerMethod.isEvent());
         if (getService().listener() && bukkitWorkerMethod.isEvent()) {
+            System.out.println("anot");
             BukkitEvent eventAnnotation = bukkitWorkerMethod.getMethod().getAnnotation(BukkitEvent.class);
+            System.out.println("register event " + eventAnnotation.value().toString());
             Listener listener = new Listener() {
             };
             worker.getJavaPlugin().getServer().getPluginManager().registerEvent(eventAnnotation.value(), listener, eventAnnotation.priority(), (l, e) -> {
                 params.add(e);
+                System.out.println("event invoke");
                 try {
-                    workerMethod.invoke(params.toArray());
+                    bukkitWorkerMethod.invoke(params.toArray());
                     params.clear();
                 } catch (InvocationTargetException | IllegalAccessException ex) {
                     ex.printStackTrace();

@@ -5,6 +5,7 @@ import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.plugin.MommonsPlugin;
+import cz.maku.mommons.server.Server;
 import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
@@ -74,9 +75,9 @@ public class NetworkTokenService {
 
     @Repeat(delay = 3 * 20, period = 30L)
     @Async
-    public void download(@Load ServerDataService serverDataService) {
+    public void download() {
         Logger logger = MommonsPlugin.getPlugin().getLogger();
-        MySQL.getApi().queryAsync("mommons_networktokens", "SELECT * FROM {table} WHERE target_server = ? AND executed = 0;", serverDataService.getServer().getId()).thenAccept(rows -> {
+        MySQL.getApi().queryAsync("mommons_networktokens", "SELECT * FROM {table} WHERE target_server = ? AND executed = 0;", Server.local().getId()).thenAccept(rows -> {
             if (rows.isEmpty()) return;
             for (SQLRow row : rows) {
                 String target_server = row.getString("target_server");
