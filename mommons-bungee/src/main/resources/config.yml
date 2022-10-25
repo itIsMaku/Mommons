@@ -1,0 +1,7 @@
+address: 172.18.0.1
+port: 3306
+database: db
+username: user
+password: pass
+ssl: false
+auto-reconnect: true

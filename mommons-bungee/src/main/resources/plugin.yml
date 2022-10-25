@@ -1,8 +1,5 @@
-name: MommonsLoader
+name: MommonsProxy
 main: cz.maku.mommons.plugin.MommonsPlugin
 author: itIsMaku
 description: Plugin what loads every plugin depends on Mommons
-version: 2.0.1
-softdepend:
-  - HolographicDisplays
-api-version: 1.19
+version: 2.0.0
