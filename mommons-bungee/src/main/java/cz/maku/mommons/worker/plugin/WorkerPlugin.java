@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.md_5.bungee.api.plugin.Plugin;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -27,10 +26,6 @@ public abstract class WorkerPlugin extends Plugin {
 
     @Override
     public void onEnable() {
-        Collection<Plugin> plugins = getProxy().getPluginManager().getPlugins();
-        for (Plugin plugin : plugins) {
-            createLoggerHandler(plugin.getLogger());
-        }
         createLoggerHandler(getLogger());
         preWorkerLoad();
         worker = MommonsPlugin.getPlugin().getWorker();

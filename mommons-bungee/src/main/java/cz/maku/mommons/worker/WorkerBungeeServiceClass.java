@@ -72,11 +72,7 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
     @Override
     protected void nextHandlers(WorkerMethod workerMethod, List<Object> params) {
         BungeeWorkerMethod bungeeWorkerMethod = new BungeeWorkerMethod(workerMethod);
-        System.out.println("1 " + bungeeWorkerMethod.getMethod().getName());
-        System.out.println("2 " + getService().commands());
-        System.out.println("3 " + bungeeWorkerMethod.isCommand());
         if (getService().commands() && bungeeWorkerMethod.isCommand()) {
-            System.out.println("4" + bungeeWorkerMethod.getMethod().getName());
             BungeeCommand command = bungeeWorkerMethod.getMethod().getAnnotation(BungeeCommand.class);
             ProxyServer.getInstance().getPluginManager().registerCommand(MommonsPlugin.getPlugin(), new Command(command.value(), command.permission(), command.aliases()) {
                 @SneakyThrows

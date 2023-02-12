@@ -9,6 +9,7 @@ import cz.maku.mommons.worker.Worker;
 import lombok.SneakyThrows;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.HashMap;
 
 public class Test {
@@ -21,12 +22,23 @@ public class Test {
         MySQL.getApi().connect();
 
 
+
+
+
+
         Repository<String, Player> repository = Repositories.createRepository(MySQL.getApi().getConnection(), Player.class);
+
         Player player = new Player();
         player.setName("kokot");
         player.setCurrencies(new HashMap<>());
-
+        player.setRank("admin");
         repository.createOrUpdate(player);
+
+        Player kokot = repository.select("kokot");
+        if (kokot != null) {
+            kokot.setRank("user");
+            repository.update(kokot);
+        }
     }
 
 }
