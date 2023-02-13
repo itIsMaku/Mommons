@@ -44,7 +44,6 @@ public class PlayerDataRepository {
 
     @BukkitEvent(AsyncPlayerPreLoginEvent.class)
     public void onPreLogin(AsyncPlayerPreLoginEvent e) {
-        System.out.println("preLogin");
         if (e.getLoginResult().equals(AsyncPlayerPreLoginEvent.Result.ALLOWED)) {
             initializePlayerAsync(e.getName());
         }
@@ -52,7 +51,6 @@ public class PlayerDataRepository {
 
     @BukkitEvent(PlayerJoinEvent.class)
     public void onJoin(PlayerJoinEvent e) {
-        System.out.println("join");
         Player player = e.getPlayer();
         load(player);
     }

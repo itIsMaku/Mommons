@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'cz.maku'
-version '2.0.1'
+version '2.0.2'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT'
     implementation project(":mommons-shared")
     implementation project(":mommons-worker")
     implementation 'com.google.guava:guava:31.1-jre'
@@ -39,8 +39,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation 'com.google.code.gson:gson:2.9.1'
     implementation 'commons-io:commons-io:20030203.000550'
+    implementation 'com.github.ZorTik:ContainrGUI:0.4.1'
     implementation 'commons-codec:commons-codec:1.9'
-    compile 'com.mojang:authlib:1.5.21'
+    compileOnly 'com.mojang:authlib:1.5.21'
     compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
 }
 
