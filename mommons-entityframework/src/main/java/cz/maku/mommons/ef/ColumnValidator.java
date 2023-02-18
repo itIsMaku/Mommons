@@ -10,7 +10,7 @@ import java.util.List;
 
 public final class ColumnValidator {
 
-    public static final List<Class<?>> DEFAULT_CLASSES = Lists.newArrayList(String.class, Integer.class, Double.class, Long.class, Float.class, Short.class, Byte.class);
+    public static final List<Class<?>> DEFAULT_CLASSES = Lists.newArrayList(String.class, Integer.class, Double.class, Long.class, Float.class, Short.class, Byte.class, Boolean.class, int.class);
 
     public static boolean validateDefaultClasses(Field field) {
         return DEFAULT_CLASSES.contains(field.getType());

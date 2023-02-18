@@ -210,6 +210,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         int i = 0;
         for (Field field : objectClass.getDeclaredFields()) {
             i++;
+            if (field.isAnnotationPresent(Id.class)) continue;
             String column = Entities.getFieldName(objectClass, field);
             statement.append(column).append(" = ?");
             if (i < objectClass.getDeclaredFields().length) {
@@ -218,7 +219,18 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         }
         statement.append(prepareStatement(" WHERE {id} = ?"));
         MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(statement.toString(), StatementType.UPDATE);
-        mySQLStatement.setArgumentValue(1, id);
+        int arg = 1;
+        for (Field field : objectClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) continue;
+            field.setAccessible(true);
+            try {
+                mySQLStatement.setArgumentValue(arg, field.get(object));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            arg++;
+        }
+        mySQLStatement.setArgumentValue(arg, id);
         mySQLStatement.complete(connection);
     }
 
