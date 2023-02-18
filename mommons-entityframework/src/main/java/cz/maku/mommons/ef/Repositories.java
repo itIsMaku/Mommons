@@ -1,6 +1,5 @@
 package cz.maku.mommons.ef;
 
-import cz.maku.mommons.Mommons;
 import cz.maku.mommons.ef.annotation.AttributeName;
 import cz.maku.mommons.ef.annotation.Entity;
 import cz.maku.mommons.ef.annotation.Id;

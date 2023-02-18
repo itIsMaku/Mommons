@@ -4,17 +4,14 @@ import com.google.common.collect.Maps;
 import cz.maku.mommons.Mommons;
 import cz.maku.mommons.ef.ColumnValidator;
 import cz.maku.mommons.ef.Entities;
-import cz.maku.mommons.ef.annotation.AttributeName;
-import cz.maku.mommons.ef.annotation.Entity;
+import cz.maku.mommons.ef.RepositoryCache;
 import cz.maku.mommons.ef.annotation.Id;
 import cz.maku.mommons.ef.converter.TypeConverter;
-import cz.maku.mommons.ef.entity.NamePolicy;
 import cz.maku.mommons.ef.statement.CompletedStatement;
 import cz.maku.mommons.ef.statement.MySQLStatementImpl;
 import cz.maku.mommons.ef.statement.StatementType;
 import cz.maku.mommons.ef.statement.record.Record;
 import cz.maku.mommons.utils.Pair;
-import cz.maku.mommons.utils.Texts;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -29,6 +26,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
     private final String idColumn;
     private final Class<T> tClass;
     private final Class<ID> idClass;
+    private final RepositoryCache<ID, T> repositoryCache;
 
     public DefaultRepository(String table, Connection connection, String idColumn, Class<T> tClass, Class<ID> idClass) {
         this.table = table;
@@ -36,6 +34,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         this.idColumn = idColumn;
         this.tClass = tClass;
         this.idClass = idClass;
+        this.repositoryCache = new RepositoryCache<>(this);
     }
 
     private String prepareStatement(String query, Object... objects) {
@@ -355,6 +354,22 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
             field.set(object, value);
         }
         return object;
+    }
+
+    @Override
+    public boolean cache(ID id, T object) {
+        return true;
+    }
+
+    @Override
+    public boolean save(ID id, T object) {
+        //updateId(object, id);
+        return true;
+    }
+
+    @Override
+    public RepositoryCache<ID, T> getRepositoryCache() {
+        return repositoryCache;
     }
 
 }

@@ -1,15 +1,11 @@
 package cz.maku.mommons.ef.test;
 
-import com.google.common.collect.Maps;
 import cz.maku.mommons.ef.Repositories;
-import cz.maku.mommons.ef.repository.DefaultRepository;
 import cz.maku.mommons.ef.repository.Repository;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.Worker;
 import lombok.SneakyThrows;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.HashMap;
 
 public class Test {
@@ -21,15 +17,9 @@ public class Test {
         worker.initialize();
         MySQL.getApi().connect();
 
-
-
-
-
-
         Repository<String, Player> repository = Repositories.createRepository(MySQL.getApi().getConnection(), Player.class);
-
         Player player = new Player();
-        player.setName("kokot");
+        player.setPlayerName("kokot");
         player.setCurrencies(new HashMap<>());
         player.setRank("admin");
         repository.createOrUpdate(player);

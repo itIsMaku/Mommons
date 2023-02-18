@@ -1,5 +1,6 @@
 package cz.maku.mommons.ef.repository;
 
+import cz.maku.mommons.ef.RepositoryCache;
 import cz.maku.mommons.ef.statement.record.Record;
 import cz.maku.mommons.storage.database.type.MySQL;
 
@@ -63,4 +64,9 @@ public interface Repository<ID, T> {
 
     <R extends Record> T fromRecord(R record) throws InstantiationException, IllegalAccessException;
 
+    boolean cache(ID id, T object);
+
+    boolean save(ID id, T object);
+
+    RepositoryCache<ID, T> getRepositoryCache();
 }
