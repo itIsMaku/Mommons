@@ -19,7 +19,7 @@ public final class ServerData {
     }
 
     public static ImmutableMap<String, Server> getServersByType(@NotNull String type) {
-        return getServersByCondition((id, server) -> type.equalsIgnoreCase(server.getType()));
+        return getServersByCondition((id, server) -> server.getType() != null && type.equalsIgnoreCase(server.getType()));
     }
 
     @Nullable

@@ -1,5 +1,6 @@
 package cz.maku.mommons.server;
 
+import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
 import cz.maku.mommons.Response;
@@ -54,7 +55,9 @@ public class Server implements CloudData, LocalData {
         return directCloud.getGson().fromJson((String) object, type);*/
         List<SQLRow> rows = MySQL.getApi().query(DirectCloudStorage.SERVER.getSqlTable(), "SELECT data FROM {table} WHERE id = ?", id);
         if (rows.isEmpty()) {
-            throw new RuntimeException("No data found for server " + id);
+            //throw new RuntimeException("No data found for server " + id);
+            //System.out.println("No data found for server " + id);
+            return Maps.newHashMap();
         }
         SQLRow row = rows.get(0);
         Type type = new TypeToken<Map<String, Object>>() {
@@ -126,7 +129,7 @@ public class Server implements CloudData, LocalData {
     public int getPlayers() {
         Object cloudValue = getCloudValue("online-players");
         if (cloudValue == null) return 0;
-        return (int) cloudValue;
+        return (int) (double) cloudValue;
     }
 
     public CompletableFuture<Response> setPlayers(int players) {
@@ -147,9 +150,9 @@ public class Server implements CloudData, LocalData {
         });
     }
 
-    @NotNull
+    @Nullable
     public String getType() {
-        return (String) Objects.requireNonNull(getCloudValue("server-type"));
+        return (String) getCloudValue("server-type");
     }
 
     public CompletableFuture<Response> setType(String type) {
