@@ -13,8 +13,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Getter
 public class WorkerServiceClass {
@@ -148,41 +150,19 @@ public class WorkerServiceClass {
 
     @SneakyThrows
     public void destroy() {
-        /*List<WorkerMethod> destroyers = methods.values().stream().filter(WorkerMethod::isDestroy).collect(Collectors.toList());
+        List<WorkerMethod> destroyers = methods.values().stream().filter(WorkerMethod::isDestroy).collect(Collectors.toList());
         for (WorkerMethod destroyer : destroyers) {
-            Destroy destroy = destroyer.getMethod().getAnnotation(Destroy.class);
-            long delay = destroy.delay();
-            if (delay < 1) {
-                if (destroyer.isAsync()) {
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            destroyer.invoke(new Object[]{});
-                        } catch (InvocationTargetException | IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                } else {
-                    destroyer.invoke(new Object[]{});
-                }
-            } else {
-                if (destroyer.isAsync()) {
-                    Schedulers.laterBukkitAsync(task -> {
-                        try {
-                            destroyer.invoke(new Object[]{});
-                        } catch (InvocationTargetException | IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    }, delay);
-                }
-                Schedulers.later(task -> {
+            if (destroyer.isAsync()) {
+                CompletableFuture.runAsync(() -> {
                     try {
                         destroyer.invoke(new Object[]{});
                     } catch (InvocationTargetException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
-                }, delay);
+                });
+            } else {
+                destroyer.invoke(new Object[]{});
             }
-        }*/
+        }
     }
-
 }

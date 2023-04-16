@@ -40,6 +40,7 @@ public class WorkerMethod {
             o[i] = params[i];
         }
         try {
+            method.setAccessible(true);
             return method.invoke(object, o);
         } catch (Exception e) {
             logger.severe("Method '" + method.getName() + "' can not be invoked.");

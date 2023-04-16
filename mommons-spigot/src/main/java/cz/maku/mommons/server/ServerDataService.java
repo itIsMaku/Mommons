@@ -3,10 +3,10 @@ package cz.maku.mommons.server;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.Response;
-import cz.maku.mommons.player.CloudPlayer;
-import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.cloud.DirectCloud;
 import cz.maku.mommons.cloud.DirectCloudStorage;
+import cz.maku.mommons.player.CloudPlayer;
+import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.WorkerReceiver;
 import cz.maku.mommons.worker.annotation.*;
@@ -17,6 +17,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -69,20 +71,32 @@ public class ServerDataService {
 
     @BukkitEvent(AsyncPlayerPreLoginEvent.class)
     public void onPreLogin(AsyncPlayerPreLoginEvent e) {
-        if (server == null) {
-            e.setKickMessage("§cChyba -> §7Na server se nelze připojit, načítá se.");
-            e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            return;
-        }
         if (!MySQL.getApi().isConnected()) {
             e.setKickMessage("§cChyba -> §7Na server se nelze připojit, nepodařilo se spojit s databází.");
             e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             return;
         }
-        server.setPlayers(Bukkit.getOnlinePlayers().size() + 1).thenAccept(response -> {
+        if (server == null) {
+            e.setKickMessage("§cChyba -> §7Na server se nelze připojit, načítá se.");
+            e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
+            return;
+        }
+    }
+
+    @BukkitEvent(PlayerJoinEvent.class)
+    public void onJoin(PlayerJoinEvent event) {
+        server.setPlayers(Bukkit.getOnlinePlayers().size()).thenAccept(response -> {
             if (Response.isException(response) || !Response.isValid(response)) {
-                e.setKickMessage("§cChyba -> §7Nepodařilo se aktualizovat počet hráčů na serveru.");
-                e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
+                event.getPlayer().kickPlayer("§cChyba -> §7Nepodařilo se aktualizovat počet hráčů na serveru.");
+            }
+        });
+    }
+
+    @BukkitEvent(PlayerQuitEvent.class)
+    public void onQuit(PlayerQuitEvent event) {
+        server.setPlayers(Bukkit.getOnlinePlayers().size() - 1).thenAccept(response -> {
+            if (Response.isException(response) || !Response.isValid(response)) {
+                event.getPlayer().kickPlayer("§cChyba -> §7Nepodařilo se aktualizovat počet hráčů na serveru.");
             }
         });
     }

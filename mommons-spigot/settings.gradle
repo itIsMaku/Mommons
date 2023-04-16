@@ -4,3 +4,6 @@ project(":mommons-worker").projectDir = file("../mommons-worker")
 
 include ':mommons-shared'
 project(":mommons-shared").projectDir = file("../mommons-shared")
+
+include ':mommons-entityframework'
+project(":mommons-entityframework").projectDir = file("../mommons-entityframework")

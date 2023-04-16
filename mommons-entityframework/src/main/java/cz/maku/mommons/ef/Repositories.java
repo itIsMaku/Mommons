@@ -35,12 +35,9 @@ public final class Repositories {
             String idColumn = "id";
             Class<ID> idClass = null;
             for (Field field : entityClass.getDeclaredFields()) {
-                System.out.println(field.getAnnotation(Id.class));
                 if (field.isAnnotationPresent(Id.class)) {
                     idClass = (Class<ID>) field.getType();
                     idColumn = field.getName();
-                    System.out.println(field.getName());
-                    System.out.println(idColumn);
                     if (field.isAnnotationPresent(AttributeName.class)) {
                         idColumn = field.getAnnotation(AttributeName.class).value();
                     }

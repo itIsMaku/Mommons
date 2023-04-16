@@ -6,6 +6,7 @@ import cz.maku.mommons.ef.ColumnValidator;
 import cz.maku.mommons.ef.Entities;
 import cz.maku.mommons.ef.RepositoryCache;
 import cz.maku.mommons.ef.annotation.Id;
+import cz.maku.mommons.ef.annotation.Ignored;
 import cz.maku.mommons.ef.converter.TypeConverter;
 import cz.maku.mommons.ef.statement.CompletedStatement;
 import cz.maku.mommons.ef.statement.MySQLStatementImpl;
@@ -134,17 +135,18 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
             o++;
             valuesStatement.append("(");
             Class<?> objectClass = object.getClass();
-            for (Field field : objectClass.getDeclaredFields()) {
+            Field[] declaredFields = Arrays.stream(objectClass.getDeclaredFields()).filter(field -> !field.isAnnotationPresent(Ignored.class)).toArray(Field[]::new);
+            for (Field field : declaredFields) {
                 i++;
                 String column = Entities.getFieldName(objectClass, field);
                 statement.append(column);
                 valuesStatement.append("?");
-                if (i < objectClass.getDeclaredFields().length) {
+                if (i < declaredFields.length) {
                     statement.append(", ");
                     valuesStatement.append(", ");
                 }
                 field.setAccessible(true);
-                arguments.put(i, field.get(object));
+                arguments.put(i, getConvertedValue(object, field));
             }
             valuesStatement.append(")");
             if (o < objects.size()) {
@@ -208,23 +210,24 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         Class<?> objectClass = object.getClass();
         StringBuilder statement = new StringBuilder(prepareStatement("UPDATE {table} SET "));
         int i = 0;
-        for (Field field : objectClass.getDeclaredFields()) {
+        Field[] declaredFields = Arrays.stream(objectClass.getDeclaredFields()).filter(field -> !field.isAnnotationPresent(Ignored.class)).toArray(Field[]::new);
+        for (Field field : declaredFields) {
             i++;
             if (field.isAnnotationPresent(Id.class)) continue;
             String column = Entities.getFieldName(objectClass, field);
             statement.append(column).append(" = ?");
-            if (i < objectClass.getDeclaredFields().length) {
+            if (i < declaredFields.length) {
                 statement.append(", ");
             }
         }
         statement.append(prepareStatement(" WHERE {id} = ?"));
         MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(statement.toString(), StatementType.UPDATE);
         int arg = 1;
-        for (Field field : objectClass.getDeclaredFields()) {
+        for (Field field : declaredFields) {
             if (field.isAnnotationPresent(Id.class)) continue;
             field.setAccessible(true);
             try {
-                mySQLStatement.setArgumentValue(arg, field.get(object));
+                mySQLStatement.setArgumentValue(arg, getConvertedValue(object, field));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -232,6 +235,19 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
         }
         mySQLStatement.setArgumentValue(arg, id);
         mySQLStatement.complete(connection);
+    }
+
+    private Object getConvertedValue(T object, Field field) throws IllegalAccessException {
+        Object value = field.get(object);
+        if (!ColumnValidator.validateDefaultClasses(field)) {
+            TypeConverter<Object, Object> typeConverter = ColumnValidator.typeConverter(field);
+            if (typeConverter == null) {
+                throw new RuntimeException("TypeConverter for field " + field.getName() + " is null.");
+            } else {
+                value = typeConverter.convertToColumn(value);
+            }
+        }
+        return value;
     }
 
     @Override
@@ -348,9 +364,11 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
     public <R extends Record> T fromRecord(R record) throws InstantiationException, IllegalAccessException {
         Class<T> objectClass = getObjectClass();
         T object = objectClass.newInstance();
-        for (Field field : object.getClass().getDeclaredFields()) {
+        Field[] declaredFields = Arrays.stream(objectClass.getDeclaredFields()).filter(field -> !field.isAnnotationPresent(Ignored.class)).toArray(Field[]::new);
+        for (Field field : declaredFields) {
+            Class<?> type = field.getType();
             if (!ColumnValidator.validateClass(field)) {
-                throw new RuntimeException("Class " + field.getType() + ", field " + field.getName() + " is not allowed. Use @AttributeConverter to field.");
+                throw new RuntimeException("Class " + type + ", field " + field.getName() + " is not allowed. Use @AttributeConverter to field.");
             }
             String column = Entities.getFieldName(objectClass, field);
             Object value = record.getObject(column);
@@ -361,6 +379,9 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
                 } else {
                     value = typeConverter.convertToEntityField(value);
                 }
+            }
+            if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+                value = value.equals(1);
             }
             field.setAccessible(true);
             field.set(object, value);
