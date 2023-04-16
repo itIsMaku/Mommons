@@ -33,6 +33,8 @@ public class WorkerMethod {
         }
         Object[] o = new Object[methodParameters.length];
         for (int i = 0; i < params.length; i++) {
+            System.out.println(methodParameters[i].getType().getName());
+            System.out.println(params[i].getClass().getName());
             if (!methodParameters[i].getType().isAssignableFrom(params[i].getClass())) {
                 logger.severe("Method '" + method.getName() + "' can not be invoked. Returning null.");
                 return null;

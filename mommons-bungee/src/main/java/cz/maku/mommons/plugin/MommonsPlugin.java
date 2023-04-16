@@ -1,6 +1,7 @@
 package cz.maku.mommons.plugin;
 
 import com.google.common.collect.Lists;
+import cz.maku.mommons.bserver.bServerDataRepository;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.BungeeWorker;
 import cz.maku.mommons.worker.plugin.WorkerPlugin;
@@ -24,7 +25,7 @@ public class MommonsPlugin extends WorkerPlugin {
 
     @Override
     public List<Class<?>> registerServices() {
-        return Lists.newArrayList();
+        return Lists.newArrayList(bServerDataRepository.class);
     }
 
     @Override

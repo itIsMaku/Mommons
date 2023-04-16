@@ -57,7 +57,8 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
         Repeat repeat = workerMethod.getMethod().getAnnotation(Repeat.class);
         ScheduledTask scheduledTask = Schedulers.repeatAsync(() -> {
             try {
-                workerMethod.invoke(params.toArray());
+                //workerMethod.invoke(params.toArray());
+                workerMethod.invoke(new Object[]{});
                 params.clear();
             } catch (InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e);

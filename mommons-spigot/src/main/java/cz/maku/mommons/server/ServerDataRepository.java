@@ -31,7 +31,6 @@ public class ServerDataRepository {
                 Map<String, Object> data = GSON.fromJson(row.getString("data"), type);
                 if (SERVERS.containsKey(id)) {
                     Server server = SERVERS.get(id);
-                    server.getCloudData().clear();
                     server.getCloudData().putAll(data);
                     continue;
                 }
