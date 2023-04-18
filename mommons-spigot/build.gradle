@@ -48,17 +48,13 @@ dependencies {
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
+        mavenJava(MavenPublication) {
+            groupId = 'com.github.itIsMaku'
+            artifactId = project.name
 
-    repositories {
-        maven {
-            url 'https://repo.repsy.io/mvn/itismaku/github/'
-            credentials {
-                username repsyUsername
-                password repsyPassword
+            from components.java
+            pom {
+                name = 'mommons-spigot'
             }
         }
     }
