@@ -15,7 +15,28 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - run: ./gradlew shadowJar
+
       - uses: actions/upload-artifact@v2
         with:
-          name: Package
-          path: '**/build/libs/*.jar'
+          name: mommons-bungee
+          path: 'mommons-bungee/build/libs/*.jar'
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: mommons-entityframework
+          path: 'mommons-entityframework/build/libs/*.jar'
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: mommons-shared
+          path: 'mommons-shared/build/libs/*.jar'
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: mommons-spigot
+          path: 'mommons-spigot/build/libs/*.jar'
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: mommons-worker
+          path: 'mommons-worker/build/libs/*.jar'
