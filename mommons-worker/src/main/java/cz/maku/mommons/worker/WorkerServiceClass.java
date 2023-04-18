@@ -49,24 +49,17 @@ public class WorkerServiceClass {
             Field field = workerField.getField();
             if (workerField.isLoad()) {
                 Class<?> fieldType = field.getType();
-                if (worker.getServices().containsKey(fieldType)) {
-                    if (worker.getServices().get(fieldType) == null) {
-                        Object object = fieldType.newInstance();
-                        worker.getServices().put(fieldType, object);
+                Map<Class<?>, Object> services = worker.getServices();
+                if (services.containsKey(fieldType)) {
+                    Object object;
+                    if (services.get(fieldType) == null) {
+                        object = fieldType.newInstance();
+                        services.put(fieldType, object);
                         worker.initializeClass(fieldType, object);
-                        workerField.setValue(object);
                     } else {
-                        workerField.setValue(worker.getServices().get(fieldType));
+                        object = services.get(fieldType);
                     }
-                } else if (worker.getSpecialServices().containsKey(fieldType)) {
-                    if (worker.getSpecialServices().get(fieldType) == null) {
-                        Object object = fieldType.newInstance();
-                        worker.getSpecialServices().put(fieldType, object);
-                        worker.initializeClass(fieldType, object);
-                        workerField.setValue(object);
-                    } else {
-                        workerField.setValue(worker.getSpecialServices().get(fieldType));
-                    }
+                    workerField.setValue(object);
                 } else {
                     logger.severe("Cannot @Load class " + field.getName() + ". Maybe is it Service?");
                 }

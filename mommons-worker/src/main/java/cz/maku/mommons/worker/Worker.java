@@ -123,12 +123,12 @@ public class Worker {
                             }
                         });
                 if (service.get() != null) {
-                    services.put(clazz, service);
+                    services.put(clazz, service.get());
                 } else {
                     logger.severe("Service '" + Texts.getShortedClassName(clazz) + "' has no suitable constructor!");
                 }
             }
-            initializeClass(clazz, service);
+            initializeClass(clazz, service.get());
         }
     }
 
