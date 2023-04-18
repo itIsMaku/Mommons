@@ -40,13 +40,27 @@ public class SQLTable {
             String addon = key;
             String simpleName = type.getSimpleName().toLowerCase();
             switch (simpleName) {
-                case "string" -> addon = key + " varchar(512)";
-                case "idautoincrement" -> addon = key + " int NOT NULL primary key AUTO_INCREMENT";
-                case "idstring" -> addon = key + " varchar(512) primary key";
-                case "autoincrement" -> addon = key + " int NOT NULL AUTO_INCREMENT";
-                case "timestamp" -> addon = key + " TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP";
-                case "integer" -> addon = key + " int";
-                case "json" -> addon = key + " JSON NULL";
+                case "string":
+                    addon = key + " varchar(512)";
+                    break;
+                case "idautoincrement":
+                    addon = key + " int NOT NULL primary key AUTO_INCREMENT";
+                    break;
+                case "idstring":
+                    addon = key + " varchar(512) primary key";
+                    break;
+                case "autoincrement":
+                    addon = key + " int NOT NULL AUTO_INCREMENT";
+                    break;
+                case "timestamp":
+                    addon = key + " TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP";
+                    break;
+                case "integer":
+                    addon = key + " int";
+                    break;
+                case "json":
+                    addon = key + " JSON NULL";
+                    break;
             }
             if (columnsString == null) {
                 columnsString = new StringBuilder("(" + addon);

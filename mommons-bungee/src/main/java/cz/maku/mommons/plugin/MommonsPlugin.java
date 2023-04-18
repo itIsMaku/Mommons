@@ -1,6 +1,7 @@
 package cz.maku.mommons.plugin;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
 import cz.maku.mommons.bserver.bServerDataRepository;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.BungeeWorker;
@@ -48,8 +49,8 @@ public class MommonsPlugin extends WorkerPlugin {
 
         if (!configFile.exists()) {
             FileOutputStream outputStream = new FileOutputStream(configFile);
-            InputStream in = getResourceAsStream("config.yml");
-            in.transferTo(outputStream);
+            InputStream inputStream = getResourceAsStream("config.yml");
+            ByteStreams.copy(inputStream, outputStream);
         }
         configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
         setWorker(new BungeeWorker());
