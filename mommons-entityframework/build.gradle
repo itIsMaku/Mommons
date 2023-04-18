@@ -28,21 +28,3 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.30'
 
 }
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        maven {
-            url 'https://repo.repsy.io/mvn/itismaku/github/'
-            credentials {
-                username repsyUsername
-                password repsyPassword
-            }
-        }
-    }
-}
