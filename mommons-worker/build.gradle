@@ -23,21 +23,3 @@ dependencies {
     implementation 'commons-io:commons-io:20030203.000550'
     implementation 'commons-codec:commons-codec:1.9'
 }
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        maven {
-            url 'https://repo.repsy.io/mvn/itismaku/github/'
-            credentials {
-                username repsyUsername
-                password repsyPassword
-            }
-        }
-    }
-}
