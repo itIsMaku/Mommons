@@ -24,12 +24,12 @@ public class WorkerServiceClass {
     private final Worker worker;
     private final Service service;
     private final Object object;
-    private final Map<String, WorkerMethod> methods;
+    private final Map<String, WorkerExecutable> methods;
     private final Map<String, WorkerField> fields;
     private final Logger logger;
-    private final Map<WorkerMethod, TimerTask> tasks;
+    private final Map<WorkerExecutable, TimerTask> tasks;
 
-    public WorkerServiceClass(Worker worker, Service service, Object object, Map<String, WorkerMethod> methods, Map<String, WorkerField> fields, Logger logger, Map<WorkerMethod, TimerTask> tasks) {
+    public WorkerServiceClass(Worker worker, Service service, Object object, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields, Logger logger, Map<WorkerExecutable, TimerTask> tasks) {
         this.worker = worker;
         this.service = service;
         this.object = object;
@@ -76,7 +76,7 @@ public class WorkerServiceClass {
 
     @SneakyThrows
     public void initializeMethods() {
-        for (WorkerMethod workerMethod : methods.values()) {
+        for (WorkerExecutable workerMethod : methods.values()) {
             List<Object> params = new ArrayList<>(Arrays.asList(workerMethod.getLoadParameters(worker)));
             if (workerMethod.isInit()) {
                 if (workerMethod.isAnotherThread()) {
@@ -106,8 +106,8 @@ public class WorkerServiceClass {
         }
     }
 
-    protected void handleSqlDownload(WorkerMethod workerMethod, List<Object> params) {
-        Download download = workerMethod.getMethod().getAnnotation(Download.class);
+    protected void handleSqlDownload(WorkerExecutable workerMethod, List<Object> params) {
+        Download download = workerMethod.getExecutable().getAnnotation(Download.class);
         Timers.repeat(task -> {
             try {
                 workerMethod.invoke(new Object[]{MySQL.getApi().query(download.table(), download.query())});
@@ -118,10 +118,10 @@ public class WorkerServiceClass {
         }, download.delay(), download.period());
     }
 
-    protected void handleRepeatTask(WorkerMethod workerMethod, List<Object> params) {
-        Repeat repeat = workerMethod.getMethod().getAnnotation(Repeat.class);
+    protected void handleRepeatTask(WorkerExecutable workerMethod, List<Object> params) {
+        Repeat repeat = workerMethod.getExecutable().getAnnotation(Repeat.class);
         boolean usedTaskParameter = false;
-        for (Parameter parameter : workerMethod.getMethod().getParameters()) {
+        for (Parameter parameter : workerMethod.getExecutable().getParameters()) {
             if (parameter.getType().equals(TimerTask.class)) {
                 usedTaskParameter = true;
             }
@@ -144,14 +144,14 @@ public class WorkerServiceClass {
         Timers.repeat(consumer, repeat.delay(), repeat.period());
     }
 
-    protected void nextHandlers(WorkerMethod workerMethod, List<Object> params) {
+    protected void nextHandlers(WorkerExecutable workerMethod, List<Object> params) {
 
     }
 
     @SneakyThrows
     public void destroy() {
-        List<WorkerMethod> destroyers = methods.values().stream().filter(WorkerMethod::isDestroy).collect(Collectors.toList());
-        for (WorkerMethod destroyer : destroyers) {
+        List<WorkerExecutable> destroyers = methods.values().stream().filter(WorkerExecutable::isDestroy).collect(Collectors.toList());
+        for (WorkerExecutable destroyer : destroyers) {
             if (destroyer.isAsync()) {
                 CompletableFuture.runAsync(() -> {
                     try {

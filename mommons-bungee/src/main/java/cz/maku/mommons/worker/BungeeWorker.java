@@ -30,7 +30,7 @@ public class BungeeWorker extends Worker {
     }
 
     @Override
-    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerMethod> methods, Map<String, WorkerField> fields) {
+    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields) {
         WorkerServiceClass workerClass = new WorkerServiceClass(this, clazz.getAnnotation(Service.class), service, methods, fields, getLogger(), Maps.newConcurrentMap());
         WorkerBungeeServiceClass workerBungeeServiceClass = new WorkerBungeeServiceClass(this, workerClass, Maps.newConcurrentMap());
         workerBungeeServiceClass.initializeFields();

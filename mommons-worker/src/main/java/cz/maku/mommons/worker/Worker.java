@@ -10,10 +10,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -99,21 +104,38 @@ public class Worker {
     protected void initialize(Map<Class<?>, Object> services) throws Exception {
         for (Class<?> clazz : services.keySet()) {
             if (workerClasses.containsKey(clazz)) continue;
-            Object service;
+            AtomicReference<Object> service = new AtomicReference<>(null);
             if (services.get(clazz) != null) {
-                service = services.get(clazz);
+                service.set(services.get(clazz));
             } else {
-                service = clazz.newInstance();
-                services.put(clazz, service);
+                Arrays.stream(clazz.getDeclaredConstructors())
+                        .sorted(Comparator.comparingInt(Constructor::getParameterCount))
+                        .forEach(declaredConstructor -> {
+                            if (service.get() == null) {
+                                try {
+                                    declaredConstructor.setAccessible(true);
+                                    service.set(declaredConstructor.getParameterCount() == 0
+                                            ? declaredConstructor.newInstance()
+                                            : new WorkerExecutable(declaredConstructor, logger).invoke(this));
+                                } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                                    logger.log(Level.SEVERE, e, e::getMessage);
+                                }
+                            }
+                        });
+                if (service.get() != null) {
+                    services.put(clazz, service);
+                } else {
+                    logger.severe("Service '" + Texts.getShortedClassName(clazz) + "' has no suitable constructor!");
+                }
             }
             initializeClass(clazz, service);
         }
     }
 
     protected void initializeClass(Class<?> clazz, Object service) {
-        Map<String, WorkerMethod> methods = Maps.newConcurrentMap();
+        Map<String, WorkerExecutable> methods = Maps.newConcurrentMap();
         for (Method method : clazz.getDeclaredMethods()) {
-            methods.put(method.getName(), new WorkerMethod(method, service, logger));
+            methods.put(method.getName(), new WorkerExecutable(method, service, logger));
         }
         Map<String, WorkerField> fields = Maps.newConcurrentMap();
         for (Field field : clazz.getDeclaredFields()) {
@@ -128,7 +150,7 @@ public class Worker {
         }
     }
 
-    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerMethod> methods, Map<String, WorkerField> fields) {
+    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields) {
         return false;
     }
 

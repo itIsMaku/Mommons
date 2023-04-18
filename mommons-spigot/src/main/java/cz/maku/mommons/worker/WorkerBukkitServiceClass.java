@@ -29,17 +29,17 @@ import java.util.function.Consumer;
 public class WorkerBukkitServiceClass extends WorkerServiceClass {
 
     private final BukkitWorker worker;
-    private final Map<WorkerMethod, BukkitTask> tasks;
+    private final Map<WorkerExecutable, BukkitTask> tasks;
 
-    public WorkerBukkitServiceClass(BukkitWorker bukkitWorker, WorkerServiceClass workerServiceClass, Map<WorkerMethod, BukkitTask> tasks) {
+    public WorkerBukkitServiceClass(BukkitWorker bukkitWorker, WorkerServiceClass workerServiceClass, Map<WorkerExecutable, BukkitTask> tasks) {
         super(workerServiceClass.getWorker(), workerServiceClass.getService(), workerServiceClass.getObject(), workerServiceClass.getMethods(), workerServiceClass.getFields(), workerServiceClass.getLogger(), Maps.newConcurrentMap());
         this.worker = bukkitWorker;
         this.tasks = tasks;
     }
 
     @Override
-    protected void handleSqlDownload(WorkerMethod workerMethod, List<Object> params) {
-        Download download = workerMethod.getMethod().getAnnotation(Download.class);
+    protected void handleSqlDownload(WorkerExecutable workerMethod, List<Object> params) {
+        Download download = workerMethod.getExecutable().getAnnotation(Download.class);
         if (workerMethod.isAsync()) {
             Bukkit.getScheduler().runTaskTimerAsynchronously(worker.getJavaPlugin(), () -> {
                 try {
@@ -62,10 +62,10 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
     }
 
     @Override
-    protected void handleRepeatTask(WorkerMethod workerMethod, List<Object> params) {
-        Repeat repeat = workerMethod.getMethod().getAnnotation(Repeat.class);
+    protected void handleRepeatTask(WorkerExecutable workerMethod, List<Object> params) {
+        Repeat repeat = workerMethod.getExecutable().getAnnotation(Repeat.class);
         boolean usedTaskParameter = false;
-        for (Parameter parameter : workerMethod.getMethod().getParameters()) {
+        for (Parameter parameter : workerMethod.getExecutable().getParameters()) {
             if (parameter.getType().equals(BukkitTask.class)) {
                 usedTaskParameter = true;
             }
@@ -93,10 +93,10 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
     }
 
     @Override
-    protected void nextHandlers(WorkerMethod workerMethod, List<Object> params) {
+    protected void nextHandlers(WorkerExecutable workerMethod, List<Object> params) {
         BukkitWorkerMethod bukkitWorkerMethod = new BukkitWorkerMethod(workerMethod);
         if (getService().commands() && bukkitWorkerMethod.isCommand()) {
-            BukkitCommand command = bukkitWorkerMethod.getMethod().getAnnotation(BukkitCommand.class);
+            BukkitCommand command = bukkitWorkerMethod.getExecutable().getAnnotation(BukkitCommand.class);
             registerCommand(command.fallbackPrefix(), new Command(command.value(), command.description(), command.usage(), Arrays.asList(command.aliases())) {
                 @SneakyThrows
                 @Override
@@ -105,7 +105,7 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
                     String[] commandArgs = null;
                     Type argsType = new TypeToken<String[]>() {
                     }.getType();
-                    for (Parameter parameter : bukkitWorkerMethod.getMethod().getParameters()) {
+                    for (Parameter parameter : bukkitWorkerMethod.getExecutable().getParameters()) {
                         if (parameter.getParameterizedType().equals(argsType)) {
                             commandArgs = args;
                         }
@@ -128,7 +128,7 @@ public class WorkerBukkitServiceClass extends WorkerServiceClass {
             return;
         }
         if (getService().listener() && bukkitWorkerMethod.isEvent()) {
-            BukkitEvent eventAnnotation = bukkitWorkerMethod.getMethod().getAnnotation(BukkitEvent.class);
+            BukkitEvent eventAnnotation = bukkitWorkerMethod.getExecutable().getAnnotation(BukkitEvent.class);
             Listener listener = new Listener() {
             };
             worker.getJavaPlugin().getServer().getPluginManager().registerEvent(eventAnnotation.value(), listener, eventAnnotation.priority(), (l, e) -> {

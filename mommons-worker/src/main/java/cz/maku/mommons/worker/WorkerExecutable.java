@@ -6,27 +6,34 @@ import cz.maku.mommons.worker.annotation.sql.Download;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.Arrays;
+import java.lang.reflect.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
-public class WorkerMethod {
+public class WorkerExecutable {
 
-    private final Method method;
+    private final Executable executable;
+    @Nullable
     private final Object object;
     private final Logger logger;
 
+    public WorkerExecutable(Constructor<?> constructor, Logger logger) {
+        this(constructor, null, logger);
+    }
+
+    public Object invoke(Worker worker) throws InvocationTargetException, IllegalAccessException {
+        return invoke(getLoadParameters(worker));
+    }
+
     public Object invoke(Object[] params) throws InvocationTargetException, IllegalAccessException {
-        Parameter[] methodParameters = method.getParameters();
+        Parameter[] methodParameters = executable.getParameters();
         if (params.length != methodParameters.length) {
-            logger.severe("Method '" + method.getName() + "' can not be invoked. Parameters lengths are not same.");
+            logger.severe("Method '" + executable.getName() + "' can not be invoked. Parameters lengths are not same.");
             logger.severe("params Length: " + params.length);
             logger.severe("methodParameters: " + methodParameters.length);
             return null;
@@ -36,16 +43,27 @@ public class WorkerMethod {
             System.out.println(methodParameters[i].getType().getName());
             System.out.println(params[i].getClass().getName());
             if (!methodParameters[i].getType().isAssignableFrom(params[i].getClass())) {
-                logger.severe("Method '" + method.getName() + "' can not be invoked. Returning null.");
+                logger.severe("Method '" + executable.getName() + "' can not be invoked. Returning null.");
                 return null;
             }
             o[i] = params[i];
         }
         try {
-            method.setAccessible(true);
-            return method.invoke(object, o);
+            executable.setAccessible(true);
+            if (executable instanceof Method) {
+                return ((Method) executable).invoke(object, o);
+            } else if(executable instanceof Constructor<?>) {
+                try {
+                    return ((Constructor<?>) executable).newInstance(o);
+                } catch(Exception e) {
+                    logger.log(Level.SEVERE, e, () -> "Constructor '" + executable.getName() + "' can not be invoked.");
+                    return null;
+                }
+            } else {
+                throw new RuntimeException("Unknown executable type: " + executable.getClass().getName());
+            }
         } catch (Exception e) {
-            logger.severe("Method '" + method.getName() + "' can not be invoked.");
+            logger.severe("Method '" + executable.getName() + "' can not be invoked.");
             e.printStackTrace();
             return null;
         }
@@ -55,7 +73,7 @@ public class WorkerMethod {
     @SneakyThrows
     public Object[] getLoadParameters(Worker worker) {
         List<Object> objects = Lists.newArrayList();
-        for (Parameter parameter : method.getParameters()) {
+        for (Parameter parameter : executable.getParameters()) {
             if (parameter.isAnnotationPresent(Load.class)) {
                 Class<?> parameterType = parameter.getType();
                 if (worker.getServices().containsKey(parameterType)) {
@@ -83,31 +101,31 @@ public class WorkerMethod {
     }
 
     public boolean isRepeatTask() {
-        return method.isAnnotationPresent(Repeat.class);
+        return executable.isAnnotationPresent(Repeat.class);
     }
 
     public boolean isAsync() {
-        return method.isAnnotationPresent(Async.class);
+        return executable.isAnnotationPresent(Async.class);
     }
 
     public boolean isAnotherThread() {
-        return method.isAnnotationPresent(AnotherThread.class);
+        return executable.isAnnotationPresent(AnotherThread.class);
     }
 
     public boolean isInit() {
-        return method.isAnnotationPresent(Initialize.class);
+        return executable.isAnnotationPresent(Initialize.class);
     }
 
     public boolean isCondition() {
-        return method.isAnnotationPresent(Condition.class);
+        return executable.isAnnotationPresent(Condition.class);
     }
 
     public boolean isSqlDownload() {
-        return method.isAnnotationPresent(Download.class);
+        return executable.isAnnotationPresent(Download.class);
     }
 
     public boolean isDestroy() {
-        return method.isAnnotationPresent(Destroy.class);
+        return executable.isAnnotationPresent(Destroy.class);
     }
 
 }

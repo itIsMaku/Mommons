@@ -3,18 +3,18 @@ package cz.maku.mommons.worker;
 import cz.maku.mommons.worker.annotation.BungeeCommand;
 import cz.maku.mommons.worker.annotation.BungeeEvent;
 
-public class BungeeWorkerMethod extends WorkerMethod {
+public class BungeeWorkerMethod extends WorkerExecutable {
 
-    public BungeeWorkerMethod(WorkerMethod workerMethod) {
-        super(workerMethod.getMethod(), workerMethod.getObject(), workerMethod.getLogger());
+    public BungeeWorkerMethod(WorkerExecutable workerMethod) {
+        super(workerMethod.getExecutable(), workerMethod.getObject(), workerMethod.getLogger());
     }
 
     public boolean isCommand() {
-        return getMethod().isAnnotationPresent(BungeeCommand.class);
+        return getExecutable().isAnnotationPresent(BungeeCommand.class);
     }
 
     public boolean isEvent() {
-        return getMethod().isAnnotationPresent(BungeeEvent.class);
+        return getExecutable().isAnnotationPresent(BungeeEvent.class);
     }
 
 }

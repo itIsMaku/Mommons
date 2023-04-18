@@ -28,17 +28,17 @@ import java.util.concurrent.TimeUnit;
 public class WorkerBungeeServiceClass extends WorkerServiceClass {
 
     private final BungeeWorker worker;
-    private final Map<WorkerMethod, ScheduledTask> tasks;
+    private final Map<WorkerExecutable, ScheduledTask> tasks;
 
-    public WorkerBungeeServiceClass(BungeeWorker bungeeWorker, WorkerServiceClass workerServiceClass, Map<WorkerMethod, ScheduledTask> tasks) {
+    public WorkerBungeeServiceClass(BungeeWorker bungeeWorker, WorkerServiceClass workerServiceClass, Map<WorkerExecutable, ScheduledTask> tasks) {
         super(workerServiceClass.getWorker(), workerServiceClass.getService(), workerServiceClass.getObject(), workerServiceClass.getMethods(), workerServiceClass.getFields(), workerServiceClass.getLogger(), Maps.newConcurrentMap());
         this.worker = bungeeWorker;
         this.tasks = tasks;
     }
 
     @Override
-    protected void handleSqlDownload(WorkerMethod workerMethod, List<Object> params) {
-        Download download = workerMethod.getMethod().getAnnotation(Download.class);
+    protected void handleSqlDownload(WorkerExecutable workerMethod, List<Object> params) {
+        Download download = workerMethod.getExecutable().getAnnotation(Download.class);
         ScheduledTask scheduledTask = Schedulers.repeatAsync(() -> {
             try {
                 workerMethod.invoke(new Object[]{MySQL.getApi().query(download.table(), download.query())});
@@ -53,8 +53,8 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
     }
 
     @Override
-    protected void handleRepeatTask(WorkerMethod workerMethod, List<Object> params) {
-        Repeat repeat = workerMethod.getMethod().getAnnotation(Repeat.class);
+    protected void handleRepeatTask(WorkerExecutable workerMethod, List<Object> params) {
+        Repeat repeat = workerMethod.getExecutable().getAnnotation(Repeat.class);
         ScheduledTask scheduledTask = Schedulers.repeatAsync(() -> {
             try {
                 //workerMethod.invoke(params.toArray());
@@ -71,10 +71,10 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
     }
 
     @Override
-    protected void nextHandlers(WorkerMethod workerMethod, List<Object> params) {
+    protected void nextHandlers(WorkerExecutable workerMethod, List<Object> params) {
         BungeeWorkerMethod bungeeWorkerMethod = new BungeeWorkerMethod(workerMethod);
         if (getService().commands() && bungeeWorkerMethod.isCommand()) {
-            BungeeCommand command = bungeeWorkerMethod.getMethod().getAnnotation(BungeeCommand.class);
+            BungeeCommand command = bungeeWorkerMethod.getExecutable().getAnnotation(BungeeCommand.class);
             ProxyServer.getInstance().getPluginManager().registerCommand(MommonsPlugin.getPlugin(), new Command(command.value(), command.permission(), command.aliases()) {
                 @SneakyThrows
                 @Override
@@ -83,7 +83,7 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
                     String[] commandArgs = null;
                     Type argsType = new TypeToken<String[]>() {
                     }.getType();
-                    for (Parameter parameter : bungeeWorkerMethod.getMethod().getParameters()) {
+                    for (Parameter parameter : bungeeWorkerMethod.getExecutable().getParameters()) {
                         if (parameter.getParameterizedType().equals(argsType)) {
                             commandArgs = args;
                         }
@@ -105,7 +105,7 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
             return;
         }
         if (getService().listener() && bungeeWorkerMethod.isEvent()) {
-            BungeeEvent eventAnnotation = bungeeWorkerMethod.getMethod().getAnnotation(BungeeEvent.class);
+            BungeeEvent eventAnnotation = bungeeWorkerMethod.getExecutable().getAnnotation(BungeeEvent.class);
             ProxyServer.getInstance().getPluginManager().registerListener(MommonsPlugin.getPlugin(), new Listener() {
                 @EventHandler
                 public void onEvent(Event event) {
