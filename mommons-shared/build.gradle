@@ -23,17 +23,3 @@ dependencies {
     implementation 'commons-io:commons-io:20030203.000550'
     implementation 'mysql:mysql-connector-java:8.0.30'
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = 'com.github.itIsMaku'
-            artifactId = project.name
-
-            from components.java
-            pom {
-                name = 'mommons-shared'
-            }
-        }
-    }
-}

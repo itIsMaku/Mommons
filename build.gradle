@@ -14,5 +14,24 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
+}
 
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = 'com.github.itIsMaku'
+                artifactId = project.name
+                version = project.version
+
+                from components.java
+                pom {
+                    name = 'Mommons'
+                }
+            }
+        }
+    }
 }

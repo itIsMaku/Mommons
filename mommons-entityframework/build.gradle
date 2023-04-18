@@ -28,17 +28,3 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.30'
 
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = 'com.github.itIsMaku'
-            artifactId = project.name
-
-            from components.java
-            pom {
-                name = 'mommons-entityframework'
-            }
-        }
-    }
-}
