@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 public class Worker {
 
     public final Map<Class<?>, WorkerServiceClass> workerClasses;
-    private final Map<Class<?>, Object> specialServices;
     private final Map<Class<?>, Object> services;
     @Getter(AccessLevel.PUBLIC)
     @Setter(AccessLevel.PUBLIC)
@@ -36,7 +35,6 @@ public class Worker {
     private MySQL mySQL;
 
     public Worker() {
-        specialServices = new HashMap<>();
         services = new HashMap<>();
         workerClasses = new HashMap<>();
         logger = Logger.getLogger("worker");
@@ -77,19 +75,8 @@ public class Worker {
         this.mySQL = mySQL;
     }
 
-    public void registerSpecialServices(Class<?>... classes) {
-        for (Class<?> clazz : classes) {
-            if (clazz.isAnnotationPresent(Service.class)) {
-                specialServices.put(clazz, null);
-            } else {
-                logger.severe("Registered special service '" + clazz.getName() + "' is not annotated with @Service!");
-            }
-        }
-    }
-
     @SneakyThrows
     public void initialize() {
-        initialize(specialServices);
         initialize(services);
     }
 
@@ -97,7 +84,6 @@ public class Worker {
         for (Map.Entry<Class<?>, WorkerServiceClass> e : workerClasses.entrySet()) {
             e.getValue().destroy();
         }
-        specialServices.clear();
         services.clear();
     }
 
@@ -117,7 +103,8 @@ public class Worker {
                                     service.set(declaredConstructor.getParameterCount() == 0
                                             ? declaredConstructor.newInstance()
                                             : new WorkerExecutable(declaredConstructor, logger).invoke(this));
-                                } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                                } catch (InvocationTargetException | IllegalAccessException |
+                                         InstantiationException e) {
                                     logger.log(Level.SEVERE, e, e::getMessage);
                                 }
                             }

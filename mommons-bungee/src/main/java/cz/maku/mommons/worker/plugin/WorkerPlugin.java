@@ -1,5 +1,6 @@
 package cz.maku.mommons.worker.plugin;
 
+import com.google.common.collect.Lists;
 import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.utils.ConsoleColors;
 import cz.maku.mommons.utils.Texts;
@@ -7,6 +8,7 @@ import cz.maku.mommons.worker.BungeeWorker;
 import lombok.Getter;
 import lombok.Setter;
 import net.md_5.bungee.api.plugin.Plugin;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.logging.Handler;
@@ -22,7 +24,11 @@ public abstract class WorkerPlugin extends Plugin {
 
     public abstract List<Class<?>> registerServices();
 
-    public abstract List<Class<?>> registerSpecialServices();
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public List<Class<?>> registerSpecialServices() {
+        return Lists.newArrayList();
+    }
 
     @Override
     public void onEnable() {
@@ -32,7 +38,6 @@ public abstract class WorkerPlugin extends Plugin {
         preLoad();
         worker.setPlugin(this);
         worker.registerServices(registerServices().toArray(new Class[0]));
-        worker.registerSpecialServices(registerSpecialServices().toArray(new Class[0]));
         worker.initialize();
         load();
     }

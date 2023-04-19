@@ -40,11 +40,6 @@ public class MommonsPlugin extends WorkerPlugin {
         return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, PlayerCloud.class, NetworkTokenService.class, PlayerDataRepository.class);
     }
 
-    @Override
-    public List<Class<?>> registerSpecialServices() {
-        return Lists.newArrayList();
-    }
-
     public <T> T getConfigValue(Class<T> clazz, String path) {
         return getConfig().getObject(path, clazz);
     }
