@@ -43,8 +43,7 @@ public class WorkerServiceClass {
         this(worker, service, object, Maps.newConcurrentMap(), Maps.newConcurrentMap(), logger, Maps.newConcurrentMap());
     }
 
-    @SneakyThrows
-    public void initializeFields() {
+    public void initializeFields() throws Exception {
         for (WorkerField workerField : fields.values()) {
             Field field = workerField.getField();
             if (workerField.isLoad()) {
@@ -67,8 +66,7 @@ public class WorkerServiceClass {
         }
     }
 
-    @SneakyThrows
-    public void initializeMethods() {
+    public void initializeMethods() throws InvocationTargetException, IllegalAccessException {
         for (WorkerExecutable workerMethod : methods.values()) {
             List<Object> params = new ArrayList<>(Arrays.asList(workerMethod.getLoadParameters(worker)));
             if (workerMethod.isInit()) {

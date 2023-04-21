@@ -112,16 +112,22 @@ public class Worker {
         for (Field field : clazz.getDeclaredFields()) {
             fields.put(field.getName(), new WorkerField(service, field, null));
         }
-        if (!make(clazz, service, methods, fields)) {
-            WorkerServiceClass workerClass = new WorkerServiceClass(this, clazz.getAnnotation(Service.class), service, methods, fields, logger, Maps.newConcurrentMap());
-            workerClass.initializeFields();
-            workerClass.initializeMethods();
-            workerClasses.put(clazz, workerClass);
-            logger.info("Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
+        try {
+            if (!make(clazz, service, methods, fields)) {
+                WorkerServiceClass workerClass = new WorkerServiceClass(this, clazz.getAnnotation(Service.class), service, methods, fields, logger, Maps.newConcurrentMap());
+                workerClass.initializeFields();
+                workerClass.initializeMethods();
+                workerClasses.put(clazz, workerClass);
+                logger.info("Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
+            }
+        } catch (Exception e) {
+            logger.severe("Service '" + Texts.getShortedClassName(clazz) + "' was not initialized due exception!");
+            logger.log(Level.SEVERE, e, e::getMessage);
+            e.printStackTrace();
         }
     }
 
-    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields) {
+    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields) throws Exception {
         return false;
     }
 
