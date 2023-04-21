@@ -8,7 +8,6 @@ import cz.maku.mommons.server.ServerDataRepository;
 import cz.maku.mommons.server.ServerDataService;
 import cz.maku.mommons.cloud.CachedCloud;
 import cz.maku.mommons.cloud.DirectCloud;
-import cz.maku.mommons.cloud.PlayerCloud;
 import cz.maku.mommons.storage.database.SQLTable;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.token.NetworkTokenService;
@@ -37,7 +36,7 @@ public class MommonsPlugin extends WorkerPlugin {
 
     @Override
     public List<Class<?>> registerServices() {
-        return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, PlayerCloud.class, NetworkTokenService.class, PlayerDataRepository.class);
+        return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, NetworkTokenService.class, PlayerDataRepository.class);
     }
 
     public <T> T getConfigValue(Class<T> clazz, String path) {
