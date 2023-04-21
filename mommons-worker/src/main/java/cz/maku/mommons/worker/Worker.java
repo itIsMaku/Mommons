@@ -1,8 +1,8 @@
 package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
+import cz.maku.mommons.logger.LoggerHandler;
 import cz.maku.mommons.storage.database.type.MySQL;
-import cz.maku.mommons.utils.ConsoleColors;
 import cz.maku.mommons.utils.Texts;
 import cz.maku.mommons.worker.annotation.Service;
 import lombok.AccessLevel;
@@ -19,9 +19,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 @Getter(AccessLevel.PROTECTED)
@@ -37,28 +35,8 @@ public class Worker {
     public Worker() {
         services = new HashMap<>();
         workerClasses = new HashMap<>();
-        logger = Logger.getLogger("worker");
-        logger.addHandler(new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                if (record.getLevel().equals(Level.INFO)) {
-                    record.setLoggerName(ConsoleColors.GREEN_BRIGHT + Thread.currentThread().getName() + ConsoleColors.WHITE_BRIGHT);
-                } else {
-                    record.setLoggerName(Thread.currentThread().getName());
-                }
-                record.setMessage(Texts.getShortedClassName(record.getSourceClassName()) + " : " + record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-                System.out.flush();
-            }
-
-            @Override
-            public void close() throws SecurityException {
-                System.out.close();
-            }
-        });
+        logger = Logger.getLogger("Worker");
+        logger.addHandler(new LoggerHandler(getClass()));
     }
 
     public void registerServices(Class<?>... classes) {

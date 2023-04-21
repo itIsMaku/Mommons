@@ -27,7 +27,6 @@ public class MySQLStatementImpl implements Statement {
     @Override
     public CompletedStatement<MySQLStatementImpl> complete(Connection connection) {
         List<DefaultRecordImpl> query = Lists.newArrayList();
-        System.out.println(statement);
         if (statementType.equals(StatementType.SELECT)) {
             query = query(connection);
         } else {

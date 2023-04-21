@@ -68,6 +68,11 @@ public final class Texts {
                 output.append(s);
                 continue;
             }
+            if ((i + 2) == split.length) {
+                output.append(s).append(".");
+                i++;
+                continue;
+            }
             output.append(s.charAt(0)).append(".");
             i++;
         }

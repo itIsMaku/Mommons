@@ -43,20 +43,8 @@ public class Server implements CloudData, LocalData {
 
     @NotNull
     public Map<String, Object> getCloudData() {
-        /*DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
-        if (directCloud == null) {
-            MommonsPlugin.getPlugin().getLogger().warning("DirectCloud is null (service from core Worker).");
-            return Maps.newHashMap();
-        }
-        Object object = directCloud.get(DirectCloudStorage.SERVER, "id", id, "data");
-        if (object == null) return Maps.newHashMap();
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        return directCloud.getGson().fromJson((String) object, type);*/
         List<SQLRow> rows = MySQL.getApi().query(DirectCloudStorage.SERVER.getSqlTable(), "SELECT data FROM {table} WHERE id = ?", id);
         if (rows.isEmpty()) {
-            //throw new RuntimeException("No data found for server " + id);
-            //System.out.println("No data found for server " + id);
             return Maps.newHashMap();
         }
         SQLRow row = rows.get(0);

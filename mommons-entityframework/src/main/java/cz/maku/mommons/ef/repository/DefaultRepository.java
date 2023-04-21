@@ -156,7 +156,6 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
 
         }
         MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(statement.toString(), StatementType.CREATE, arguments);
-        System.out.println(Mommons.GSON.toJson(arguments));
         mySQLStatement.complete(connection);
     }
 

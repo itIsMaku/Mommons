@@ -1,9 +1,8 @@
 package cz.maku.mommons.worker.plugin;
 
 import com.google.common.collect.Lists;
+import cz.maku.mommons.logger.LoggerHandler;
 import cz.maku.mommons.plugin.MommonsPlugin;
-import cz.maku.mommons.utils.ConsoleColors;
-import cz.maku.mommons.utils.Texts;
 import cz.maku.mommons.worker.BungeeWorker;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,10 +10,6 @@ import net.md_5.bungee.api.plugin.Plugin;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 public abstract class WorkerPlugin extends Plugin {
 
@@ -32,7 +27,7 @@ public abstract class WorkerPlugin extends Plugin {
 
     @Override
     public void onEnable() {
-        createLoggerHandler(getLogger());
+        getLogger().addHandler(new LoggerHandler(getClass()));
         preWorkerLoad();
         worker = MommonsPlugin.getPlugin().getWorker();
         preLoad();
@@ -61,28 +56,4 @@ public abstract class WorkerPlugin extends Plugin {
     }
 
     public abstract void unload();
-
-    public void createLoggerHandler(Logger logger) {
-        logger.addHandler(new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                if (record.getLevel().equals(Level.INFO)) {
-                    record.setLoggerName(ConsoleColors.GREEN_BRIGHT + Thread.currentThread().getName() + ConsoleColors.WHITE_BRIGHT);
-                } else {
-                    record.setLoggerName(Thread.currentThread().getName());
-                }
-                record.setMessage(Texts.getShortedClassName(record.getSourceClassName()) + " : " + record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-                System.out.flush();
-            }
-
-            @Override
-            public void close() throws SecurityException {
-                System.out.close();
-            }
-        });
-    }
 }
