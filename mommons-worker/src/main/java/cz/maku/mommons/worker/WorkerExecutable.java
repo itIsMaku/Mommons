@@ -104,10 +104,6 @@ public class WorkerExecutable {
         return executable.isAnnotationPresent(Initialize.class);
     }
 
-    public boolean isCondition() {
-        return executable.isAnnotationPresent(Condition.class);
-    }
-
     public boolean isSqlDownload() {
         return executable.isAnnotationPresent(Download.class);
     }

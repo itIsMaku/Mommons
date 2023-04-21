@@ -79,7 +79,6 @@ public class ServerDataService {
         if (server == null) {
             e.setKickMessage("§cChyba -> §7Na server se nelze připojit, načítá se.");
             e.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            return;
         }
     }
 
