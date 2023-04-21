@@ -1,5 +1,6 @@
 package cz.maku.mommons.server;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.Response;
@@ -7,6 +8,7 @@ import cz.maku.mommons.cloud.DirectCloud;
 import cz.maku.mommons.cloud.DirectCloudStorage;
 import cz.maku.mommons.player.CloudPlayer;
 import cz.maku.mommons.plugin.MommonsPlugin;
+import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.WorkerReceiver;
 import cz.maku.mommons.worker.annotation.*;
@@ -22,6 +24,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 import static cz.maku.mommons.Mommons.GSON;
 
@@ -43,25 +46,24 @@ public class ServerDataService {
     public void serverInit() {
         localServerInfo = new LocalServerInfo();
         String id = coreConfiguration.getString("server.id");
-        MySQL.getApi().queryAsync("mommons_servers", "SELECT * FROM {table} WHERE id = ?;", id).thenAccept(r -> {
-            if (r.isEmpty()) {
-                Map<String, Object> map = Maps.newHashMap();
-                map.put("server-info", GSON.toJson(localServerInfo));
-                MySQL.getApi().queryAsync("mommons_servers", "INSERT INTO {table} (id, data) VALUES (?, ?);", id, GSON.toJson(map));
-            }
-        });
-        Bukkit.getScheduler().runTaskLater(MommonsPlugin.getPlugin(), () -> {
-            Object object = directCloud.get(DirectCloudStorage.SERVER, "id", id, "data");
-            Type type = new TypeToken<Map<String, Object>>() {
-            }.getType();
-            if (object == null) {
-                object = GSON.toJson(Maps.newHashMap());
-            }
-            Map<String, Object> oldCloudData = GSON.fromJson((String) object, type);
-            server = new Server(id, oldCloudData, Maps.newConcurrentMap());
-            server.setCloudValue("server-info", GSON.toJson(localServerInfo));
-            server.setType("unknown");
-        }, 20 * 1);
+        Optional<SQLRow> optionalRow = MySQL.getApi().single("mommons_servers", "SELECT * FROM {table} WHERE id = ?;", id);
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("server-info", GSON.toJson(localServerInfo));
+        if (!optionalRow.isPresent()) {
+            MySQL.getApi().query("mommons_servers", "INSERT INTO {table} (id, data) VALUES (?, ?);", id, GSON.toJson(data));
+        }
+        Map<String, Object> oldData = Maps.newHashMap();
+        if (optionalRow.isPresent()) {
+            oldData = optionalRow.get().getJsonObject("data", new TypeToken<Map<String, Object>>() {
+            }.getType());
+        }
+        server = new Server(id, oldData, Maps.newConcurrentMap());
+        server.setMultipleValues(
+                ImmutableMap.of(
+                        "server-info", GSON.toJson(localServerInfo),
+                        "server-type", "unknown"
+                )
+        );
     }
 
     @Destroy
@@ -110,7 +112,7 @@ public class ServerDataService {
                     player.sendMessage("§cChyba -> §7Tvá instance hráče nebyla nalezena.");
                     return;
                 }
-                cloudPlayer.setCloudValue("op", true).thenAccept(response -> {
+                cloudPlayer.setValueAsync("op", true, true).thenAccept(response -> {
                     if (Response.isException(response) || !Response.isValid(response)) {
                         player.sendMessage("§cChyba -> §7Nepodařilo se uložit hodnotu do cloudu.");
                     } else {

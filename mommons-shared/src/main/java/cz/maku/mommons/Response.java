@@ -29,6 +29,15 @@ public class Response {
         return null;
     }
 
+    public static Response from(Runnable runnable) {
+        try {
+            runnable.run();
+            return new Response(Code.SUCCESS, "Success");
+        } catch (Exception exception) {
+            return new ExceptionResponse(Code.ERROR, "There was an exception", exception);
+        }
+    }
+
     public enum Code {
         SUCCESS,
         ERROR;

@@ -5,6 +5,7 @@ import cz.maku.mommons.storage.database.SQLRow;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class MySQL extends JDBC {
@@ -76,8 +77,20 @@ public class MySQL extends JDBC {
         return CompletableFuture.supplyAsync(() -> query(table, sql, objects));
     }
 
+    public Optional<SQLRow> single(String table, String sql, Object... objects) {
+        List<SQLRow> rows = query(table, sql, objects);
+        if (rows.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(rows.get(0));
+    }
+
     public boolean existRow(String table, String column, Object clause) {
         List<SQLRow> rows = query(table, String.format("SELECT * FROM {table} WHERE %s = ?", column), clause);
         return !rows.isEmpty();
+    }
+
+    public CompletableFuture<Boolean> existRowAsync(String table, String column, Object clause) {
+        return CompletableFuture.supplyAsync(() -> existRow(table, column, clause));
     }
 }

@@ -2,12 +2,12 @@ package cz.maku.mommons.player;
 
 import com.google.common.collect.Maps;
 import cz.maku.mommons.Response;
+import cz.maku.mommons.cloud.DirectCloud;
 import cz.maku.mommons.player.event.CloudPlayerLoadEvent;
 import cz.maku.mommons.player.event.CloudPlayerPreUnloadEvent;
 import cz.maku.mommons.player.event.CloudPlayerUnloadEvent;
 import cz.maku.mommons.server.ServerDataService;
-import cz.maku.mommons.cloud.DirectCloud;
-import cz.maku.mommons.cloud.DirectCloudStorage;
+import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BukkitEvent;
 import cz.maku.mommons.worker.annotation.Initialize;
 import cz.maku.mommons.worker.annotation.Load;
@@ -20,7 +20,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static cz.maku.mommons.Mommons.GSON;
 
@@ -82,10 +81,9 @@ public class PlayerDataRepository {
     @Nullable
     public CloudPlayer downloadCloudPlayer(String nickname) {
         Player player = Bukkit.getPlayer(nickname);
-        CompletableFuture.runAsync(() -> {
-            Object rawData = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
-            if (rawData == null) {
-                Response response = directCloud.insert(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(Maps.newHashMap()));
+        MySQL.getApi().existRowAsync("mommons_players", "id", nickname).thenAcceptAsync(exist -> {
+            if (!exist) {
+                Response response = Response.from(() -> MySQL.getApi().query("mommons_players", "INSERT INTO {table} (id, data) VALUES (?, ?)", nickname, GSON.toJson(Maps.newHashMap())));
                 if (Response.isException(response) || !Response.isValid(response)) {
                     if (player != null) {
                         player.kickPlayer("§cChyba -> §7Nastala chyba pri odesilani pozadavku na databazi.");
@@ -100,7 +98,7 @@ public class PlayerDataRepository {
         //CompletableFuture.runAsync(() -> {
         CloudPlayer cloudPlayer = downloadCloudPlayer(name);
         PLAYERS.put(name, cloudPlayer);
-        cloudPlayer.setCloudValue("connected-server", serverDataService.getServer().getId());
+        cloudPlayer.setValueAsync("connected-server", serverDataService.getServer().getId(), true);
         //});
     }
 }
