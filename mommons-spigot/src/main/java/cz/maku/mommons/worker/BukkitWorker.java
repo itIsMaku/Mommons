@@ -1,6 +1,7 @@
 package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
+import cz.maku.mommons.logger.LoggerHandler;
 import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.utils.Texts;
 import cz.maku.mommons.worker.annotation.Service;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Getter(AccessLevel.PROTECTED)
 public class BukkitWorker extends Worker {
@@ -16,7 +18,9 @@ public class BukkitWorker extends Worker {
     private JavaPlugin javaPlugin;
 
     public BukkitWorker() {
-        setLogger(MommonsPlugin.getPlugin().getLogger());
+        Logger logger = Logger.getLogger("Worker");
+        logger.addHandler(new LoggerHandler(getClass()));
+        setLogger(logger);
     }
 
     public void setJavaPlugin(JavaPlugin javaPlugin) {
@@ -30,7 +34,7 @@ public class BukkitWorker extends Worker {
     }
 
     @Override
-    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields) {
+    protected boolean make(Class<?> clazz, Object service, Map<String, WorkerExecutable> methods, Map<String, WorkerField> fields) throws Exception {
         WorkerServiceClass workerClass = new WorkerServiceClass(this, clazz.getAnnotation(Service.class), service, methods, fields, getLogger(), Maps.newConcurrentMap());
         WorkerBukkitServiceClass workerBukkitServiceClass = new WorkerBukkitServiceClass(this, workerClass, Maps.newConcurrentMap());
         workerBukkitServiceClass.initializeFields();

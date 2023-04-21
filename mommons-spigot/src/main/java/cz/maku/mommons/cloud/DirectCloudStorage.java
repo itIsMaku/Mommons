@@ -1,17 +1,18 @@
 package cz.maku.mommons.cloud;
 
-import cz.maku.mommons.player.CloudPlayer;
-import cz.maku.mommons.server.Server;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.jetbrains.annotations.ApiStatus;
 
 @AllArgsConstructor
 @Getter
+@Deprecated
+@ApiStatus.ScheduledForRemoval
 public enum DirectCloudStorage {
-    SERVER(Server.class, "mommons_servers"),
-    PLAYER(CloudPlayer.class, "mommons_players");
+    SERVER(null, "mommons_servers"),
+    PLAYER(null, "mommons_players");
 
     private final Class<? extends CloudData> dataClass;
     private final String sqlTable;
 
-}  
+}

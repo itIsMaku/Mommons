@@ -29,14 +29,7 @@ public class ServerDataRepository {
                 Type type = new TypeToken<Map<String, Object>>() {
                 }.getType();
                 Map<String, Object> data = GSON.fromJson(row.getString("data"), type);
-                if (SERVERS.containsKey(id)) {
-                    Server server = SERVERS.get(id);
-                    server.getCloudData().putAll(data);
-                    continue;
-                }
-                Server server = new Server(id, data, Maps.newHashMap());
-                server.getCloudData().putAll(data);
-                newServers.put(id, server);
+                newServers.put(id, new Server(id, data, Maps.newHashMap()));
             }
             SERVERS.entrySet().removeIf(e -> rows.stream().filter(row -> row.getString("id") != null).findFirst().orElse(null) == null);
             SERVERS.putAll(newServers);

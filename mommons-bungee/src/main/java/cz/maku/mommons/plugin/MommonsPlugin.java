@@ -30,11 +30,6 @@ public class MommonsPlugin extends WorkerPlugin {
     }
 
     @Override
-    public List<Class<?>> registerSpecialServices() {
-        return Lists.newArrayList();
-    }
-
-    @Override
     public void preWorkerLoad() {
         plugin = this;
     }

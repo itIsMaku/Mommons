@@ -1,7 +1,8 @@
 package cz.maku.mommons.storage.database;
 
-import com.google.gson.GsonBuilder;
+import cz.maku.mommons.Mommons;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,16 @@ public class SQLRow {
         return (double) columns.get(column);
     }
 
+    @Deprecated
     public <T> T getObjectFromJSON(Class<T> tClass, String column) {
-        return new GsonBuilder().create().fromJson(getString(column), tClass);
+        return Mommons.GSON.fromJson(getString(column), tClass);
+    }
+
+    public <T> T getJsonObject(String column, Type type) {
+        return Mommons.GSON.fromJson(getString(column), type);
+    }
+
+    public <T> T getJsonObject(String column, Class<T> tClass) {
+        return Mommons.GSON.fromJson(getString(column), tClass);
     }
 }

@@ -1,56 +1,49 @@
 package cz.maku.mommons.bserver;
 
-import com.google.common.collect.Maps;
-import com.google.common.reflect.TypeToken;
-import cz.maku.mommons.storage.database.SQLRow;
-import cz.maku.mommons.storage.database.type.MySQL;
+import cz.maku.mommons.Mommons;
+import cz.maku.mommons.data.MySQLSavableData;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static cz.maku.mommons.Mommons.GSON;
-
-public class bServer {
+public class bServer extends MySQLSavableData {
 
     @NotNull
+    @Getter
     private final String id;
 
     public bServer(@NotNull String id) {
+        super("mommons_servers", "id", "data", id);
         this.id = id;
+
     }
 
     @NotNull
+    @Deprecated
     public Map<String, Object> getCloudData() {
-        List<SQLRow> rows = MySQL.getApi().query("mommons_servers", "SELECT data FROM {table} WHERE id = ?", id);
-        if (rows.isEmpty()) {
-            return Maps.newHashMap();
-        }
-        SQLRow row = rows.get(0);
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        return GSON.fromJson(row.getString("data"), type);
+        return getValues();
     }
 
     @Nullable
+    @Deprecated
     public Object getCloudValue(String key) {
-        Map<String, Object> cloudData = getCloudData();
-        return cloudData.get(key);
+        return getValue(key);
     }
 
     public int getPlayers() {
-        Object cloudValue = getCloudValue("online-players");
-        if (cloudValue == null) return 0;
-        return (int) (double) cloudValue;
+        Object value = getValue("online-players");
+        if (value == null) return 0;
+        return (int) (double) value;
     }
 
     public CompletableFuture<bLocalServerInfo> getServerInfo() {
         return CompletableFuture.supplyAsync(() -> {
-            String ip = (String) getCloudValue("ip");
-            Object rawPort = getCloudValue("port");
+            Map<String, Object> values = getValues();
+            String ip = (String) values.get("ip");
+            Object rawPort = values.get("port");
             int port;
             if (rawPort == null) {
                 port = 0;
@@ -58,11 +51,11 @@ public class bServer {
                 port = (int) rawPort;
             }
             return new bLocalServerInfo(ip, port);
-        });
+        }, Mommons.ES);
     }
 
     @Nullable
     public String getType() {
-        return (String) getCloudValue("server-type");
+        return (String) getValue("server-type");
     }
 }

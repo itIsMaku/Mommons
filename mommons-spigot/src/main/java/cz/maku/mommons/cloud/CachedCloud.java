@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Service(sql = true)
+@Deprecated
 public class CachedCloud {
 
     @Getter(AccessLevel.PROTECTED)

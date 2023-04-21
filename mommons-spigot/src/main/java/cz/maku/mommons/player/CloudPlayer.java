@@ -1,35 +1,26 @@
 package cz.maku.mommons.player;
 
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.google.common.reflect.TypeToken;
-import cz.maku.mommons.ExceptionResponse;
+import cz.maku.mommons.Mommons;
 import cz.maku.mommons.Response;
+import cz.maku.mommons.data.MySQLSavableData;
 import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.server.Server;
 import cz.maku.mommons.server.ServerData;
-import cz.maku.mommons.cloud.CloudData;
-import cz.maku.mommons.cloud.DirectCloud;
-import cz.maku.mommons.cloud.DirectCloudStorage;
 import cz.maku.mommons.storage.local.LocalData;
 import cz.maku.mommons.worker.WorkerReceiver;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static cz.maku.mommons.Mommons.GSON;
-
-@AllArgsConstructor
-public class CloudPlayer implements CloudData, LocalData {
+public class CloudPlayer extends MySQLSavableData implements LocalData {
 
     @NotNull
     @Getter
@@ -44,10 +35,15 @@ public class CloudPlayer implements CloudData, LocalData {
     private Player player;
 
     public CloudPlayer(CloudPlayer cloudPlayer) {
-        cachedData = cloudPlayer.getCachedData();
-        localData = cloudPlayer.getLocalData();
-        nickname = cloudPlayer.getNickname();
-        player = cloudPlayer.bukkit();
+        this(cloudPlayer.getCachedData(), cloudPlayer.getLocalData(), cloudPlayer.getNickname(), cloudPlayer.bukkit());
+    }
+
+    public CloudPlayer(@NotNull Map<String, Object> cachedData, @NotNull Map<String, Object> localData, @NotNull String nickname, Player player) {
+        super("mommons_players", "id", "data", nickname);
+        this.cachedData = cachedData;
+        this.localData = localData;
+        this.nickname = nickname;
+        this.player = player;
     }
 
     @Nullable
@@ -64,7 +60,9 @@ public class CloudPlayer implements CloudData, LocalData {
     public static CloudPlayer getInstanceOrDownload(String nickname) {
         CloudPlayer instance = getInstance(nickname);
         if (instance == null) {
-            return WorkerReceiver.getCoreService(PlayerDataRepository.class).downloadCloudPlayer(nickname);
+            PlayerDataRepository playerDataRepository = WorkerReceiver.getCoreService(PlayerDataRepository.class);
+            if (playerDataRepository == null) return null;
+            return playerDataRepository.downloadCloudPlayer(nickname);
         }
         return instance;
     }
@@ -75,7 +73,7 @@ public class CloudPlayer implements CloudData, LocalData {
     }
 
     public static CompletableFuture<@Nullable CloudPlayer> getInstanceOrDownloadAsync(String nickname) {
-        return CompletableFuture.supplyAsync(() -> getInstanceOrDownload(nickname));
+        return CompletableFuture.supplyAsync(() -> getInstanceOrDownload(nickname), Mommons.ES);
     }
 
     public static CompletableFuture<@Nullable CloudPlayer> getInstanceOrDownloadAsync(Player player) {
@@ -83,51 +81,21 @@ public class CloudPlayer implements CloudData, LocalData {
     }
 
     @NotNull
+    @Deprecated
     public Map<String, Object> getCloudData() {
-        DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
-        if (directCloud == null) {
-            MommonsPlugin.getPlugin().getLogger().warning("DirectCloud is null (service from core Worker).");
-            return Maps.newHashMap();
-        }
-        Object object = directCloud.get(DirectCloudStorage.PLAYER, "id", nickname, "data");
-        if (object == null) return Maps.newHashMap();
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        return directCloud.getGson().fromJson((String) object, type);
+        return getValues();
     }
 
-    @Override
     @Nullable
+    @Deprecated
     public Object getCloudValue(String key) {
-        Map<String, Object> cloudData = getCloudData();
-        return cloudData.get(key);
+        return getValue(key);
     }
 
-    @Override
     @NotNull
+    @Deprecated
     public CompletableFuture<@NotNull Response> setCloudValue(String key, Object value) {
-        WorkerReceiver.getCoreWorker().getLogger().warning(String.format("SetCloudValue for player %s: %s -> %s", nickname, key, value));
-        DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
-        if (directCloud == null)
-            return CompletableFuture.completedFuture(new Response(Response.Code.ERROR, "DirectCloud is null (service from core Worker)."));
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Map<String, Object> data = getCloudData();
-                if (data.containsKey(key) && value == null) {
-                    data.remove(key);
-                    return directCloud.update(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(data));
-                }
-                data.put(key, value);
-                if (!data.containsKey(key)) {
-                    return directCloud.insert(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(data));
-                } else {
-                    return directCloud.update(DirectCloudStorage.PLAYER, "id", nickname, "data", GSON.toJson(data));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
-            }
-        });
+        return setValueAsync(key, value, true);
     }
 
     @Override
@@ -151,7 +119,7 @@ public class CloudPlayer implements CloudData, LocalData {
 
     @Nullable
     public Server getConnectedServer() {
-        Object raw = getCloudValue("connected-server");
+        Object raw = getValue("connected-server");
         if (raw == null) return null;
         return ServerData.getServer((String) raw);
     }

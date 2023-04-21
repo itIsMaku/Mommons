@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,8 +35,6 @@ public class WorkerExecutable {
         Parameter[] methodParameters = executable.getParameters();
         if (params.length != methodParameters.length) {
             logger.severe("Method '" + executable.getName() + "' can not be invoked. Parameters lengths are not same.");
-            logger.severe("params Length: " + params.length);
-            logger.severe("methodParameters: " + methodParameters.length);
             return null;
         }
         Object[] o = new Object[methodParameters.length];
@@ -50,10 +49,10 @@ public class WorkerExecutable {
             executable.setAccessible(true);
             if (executable instanceof Method) {
                 return ((Method) executable).invoke(object, o);
-            } else if(executable instanceof Constructor<?>) {
+            } else if (executable instanceof Constructor<?>) {
                 try {
                     return ((Constructor<?>) executable).newInstance(o);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     logger.log(Level.SEVERE, e, () -> "Constructor '" + executable.getName() + "' can not be invoked.");
                     return null;
                 }
@@ -74,25 +73,16 @@ public class WorkerExecutable {
         for (Parameter parameter : executable.getParameters()) {
             if (parameter.isAnnotationPresent(Load.class)) {
                 Class<?> parameterType = parameter.getType();
-                if (worker.getServices().containsKey(parameterType)) {
-                    if (worker.getServices().get(parameterType) == null) {
-                        Object object = parameterType.newInstance();
-                        worker.getServices().put(parameterType, object);
-                        worker.initializeClass(parameterType, object);
-                        objects.add(object);
-                    }
-                } else {
-                    if (worker.getSpecialServices().containsKey(parameterType)) {
-                        if (worker.getSpecialServices().get(parameterType) == null) {
-                            Object object = parameterType.newInstance();
-                            worker.getSpecialServices().put(parameterType, object);
-                            worker.initializeClass(parameterType, object);
-                            objects.add(object);
-                        }
-                    } else {
-                        logger.severe("Cannot @Load class " + parameterType.getName() + ". Maybe is it Service?");
-                    }
+                Map<Class<?>, Object> services = worker.getServices();
+                if (services.containsKey(parameterType) && services.get(parameterType) == null) {
+                    Object object = parameterType.newInstance();
+                    services.put(parameterType, object);
+                    worker.initializeClass(parameterType, object);
+                    objects.add(object);
+                    continue;
                 }
+                logger.severe("Cannot @Load class " + parameterType.getName() + ". Maybe is it Service?");
+
             }
         }
         return objects.toArray(new Object[0]);
@@ -112,10 +102,6 @@ public class WorkerExecutable {
 
     public boolean isInit() {
         return executable.isAnnotationPresent(Initialize.class);
-    }
-
-    public boolean isCondition() {
-        return executable.isAnnotationPresent(Condition.class);
     }
 
     public boolean isSqlDownload() {

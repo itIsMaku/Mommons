@@ -1,6 +1,5 @@
 package cz.maku.mommons.utils;
 
-import cz.maku.mommons.cache.Queue;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

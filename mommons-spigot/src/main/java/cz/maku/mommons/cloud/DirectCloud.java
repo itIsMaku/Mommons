@@ -8,12 +8,15 @@ import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.Service;
 import lombok.Getter;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 @Service
+@ApiStatus.ScheduledForRemoval
+@Deprecated
 public class DirectCloud {
 
     @Getter
