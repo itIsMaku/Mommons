@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -47,6 +48,11 @@ public class Worker {
                 logger.severe("Registered service '" + clazz.getName() + "' is not annotated with @Service!");
             }
         }
+    }
+
+    public void registerPackage(String packageName) {
+        Reflections reflections = new Reflections(packageName);
+        reflections.getTypesAnnotatedWith(Service.class).forEach(this::registerServices);
     }
 
     public void setPublicMySQL(MySQL mySQL) {
