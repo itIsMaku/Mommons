@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
+import cz.maku.mommons.Mommons;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.server.Server;
@@ -75,7 +76,7 @@ public class CloudPlayer implements CloudData, LocalData {
     }
 
     public static CompletableFuture<@Nullable CloudPlayer> getInstanceOrDownloadAsync(String nickname) {
-        return CompletableFuture.supplyAsync(() -> getInstanceOrDownload(nickname));
+        return CompletableFuture.supplyAsync(() -> getInstanceOrDownload(nickname), Mommons.ES);
     }
 
     public static CompletableFuture<@Nullable CloudPlayer> getInstanceOrDownloadAsync(Player player) {
@@ -127,7 +128,7 @@ public class CloudPlayer implements CloudData, LocalData {
                 e.printStackTrace();
                 return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
             }
-        });
+        }, Mommons.ES);
     }
 
     @Override

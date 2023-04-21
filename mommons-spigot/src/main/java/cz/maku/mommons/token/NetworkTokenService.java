@@ -3,6 +3,7 @@ package cz.maku.mommons.token;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
+import cz.maku.mommons.Mommons;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.server.Server;
@@ -46,7 +47,7 @@ public class NetworkTokenService {
     }
 
     public CompletableFuture<Response> sendTokens(String targetServer, List<Token> tokens, int expire, ChronoUnit unit) {
-        return CompletableFuture.supplyAsync(() -> sendTokensSync(targetServer, tokens, expire, unit));
+        return CompletableFuture.supplyAsync(() -> sendTokensSync(targetServer, tokens, expire, unit), Mommons.ES);
     }
 
     public Response sendTokensSync(String targetServer, List<Token> tokens, int expire, ChronoUnit unit) {

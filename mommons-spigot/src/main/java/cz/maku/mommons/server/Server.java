@@ -3,9 +3,9 @@ package cz.maku.mommons.server;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.ExceptionResponse;
+import cz.maku.mommons.Mommons;
 import cz.maku.mommons.Response;
 import cz.maku.mommons.cloud.CloudData;
-import cz.maku.mommons.cloud.DirectCloud;
 import cz.maku.mommons.cloud.DirectCloudStorage;
 import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import static cz.maku.mommons.Mommons.GSON;
@@ -62,27 +61,6 @@ public class Server implements CloudData, LocalData {
 
     @Override
     public CompletableFuture<Response> setCloudValue(String key, Object value) {
-        /*DirectCloud directCloud = WorkerReceiver.getCoreService(DirectCloud.class);
-        if (directCloud == null)
-            return CompletableFuture.completedFuture(new Response(Response.Code.ERROR, "DirectCloud is null (service from core Worker)."));
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Map<String, Object> data = getCloudData();
-                if (data.containsKey(key) && value == null) {
-                    data.remove(key);
-                    return directCloud.update(DirectCloudStorage.SERVER, "id", id, "data", GSON.toJson(data));
-                }
-                data.put(key, value);
-                if (!data.containsKey(key)) {
-                    return directCloud.insert(DirectCloudStorage.SERVER, "id", id, "data", GSON.toJson(data));
-                } else {
-                    return directCloud.update(DirectCloudStorage.SERVER, "id", id, "data", GSON.toJson(data));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
-            }
-        });*/
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Map<String, Object> cloudData = getCloudData();
@@ -97,7 +75,7 @@ public class Server implements CloudData, LocalData {
                 e.printStackTrace();
                 return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
             }
-        });
+        }, Mommons.ES);
     }
 
     public CompletableFuture<Response> setMultipleCloudValues(Map<String, Object> data) {
@@ -111,7 +89,7 @@ public class Server implements CloudData, LocalData {
                 e.printStackTrace();
                 return new ExceptionResponse(Response.Code.ERROR, "Exception while setting data.", e);
             }
-        });
+        }, Mommons.ES);
     }
 
     public int getPlayers() {

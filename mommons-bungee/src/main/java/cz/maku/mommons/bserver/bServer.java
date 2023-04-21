@@ -2,6 +2,7 @@ package cz.maku.mommons.bserver;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import cz.maku.mommons.Mommons;
 import cz.maku.mommons.storage.database.SQLRow;
 import cz.maku.mommons.storage.database.type.MySQL;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +59,7 @@ public class bServer {
                 port = (int) rawPort;
             }
             return new bLocalServerInfo(ip, port);
-        });
+        }, Mommons.ES);
     }
 
     @Nullable
