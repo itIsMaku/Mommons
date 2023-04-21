@@ -14,6 +14,8 @@ import cz.maku.mommons.worker.annotation.Async;
 import cz.maku.mommons.worker.annotation.Load;
 import cz.maku.mommons.worker.annotation.Repeat;
 import cz.maku.mommons.worker.annotation.Service;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -29,9 +31,10 @@ import java.util.stream.Collectors;
 
 import static cz.maku.mommons.Mommons.GSON;
 
-@Service(scheduled = true)
+@Service
 public class NetworkTokenService {
 
+    @Getter(AccessLevel.PROTECTED)
     private final Map<String, List<Consumer<NetworkTokenAction>>> actions = Maps.newConcurrentMap();
 
     public void addAction(String id, Consumer<NetworkTokenAction> action) {
@@ -72,40 +75,6 @@ public class NetworkTokenService {
 
     public Response sendTokenSync(String targetServer, Token token, int expire, ChronoUnit unit) {
         return sendTokensSync(targetServer, Collections.singletonList(token), expire, unit);
-    }
-
-    @Repeat(delay = 3 * 20, period = 30L)
-    @Async
-    public void download() {
-        Logger logger = MommonsPlugin.getPlugin().getLogger();
-        MySQL.getApi().queryAsync("mommons_networktokens", "SELECT * FROM {table} WHERE target_server = ? AND executed = 0;", Server.local().getId()).thenAccept(rows -> {
-            if (rows.isEmpty()) return;
-            for (SQLRow row : rows) {
-                String target_server = row.getString("target_server");
-                String token = row.getString("token");
-                Type type = new TypeToken<Map<String, String>>() {
-                }.getType();
-                Map<String, String> token_data = GSON.fromJson(row.getString("token_data"), type);
-                String action_id = row.getString("action_id");
-                int expire = row.getInt("expire");
-                ChronoUnit unit = ChronoUnit.valueOf(row.getString("unit").toUpperCase());
-                LocalDateTime sent = GSON.fromJson(row.getString("sent"), LocalDateTime.class);
-                if (unit.between(sent, LocalDateTime.now()) > expire) {
-                    logger.warning("Token '" + token + "' expired during downloading.");
-                    continue;
-                }
-                if (!actions.containsKey(action_id) || actions.get(action_id).isEmpty()) {
-                    logger.severe("Action ID '" + action_id + "' does not have any registered action.");
-                    continue;
-                }
-                Map<String, List<Consumer<NetworkTokenAction>>> actions = this.actions.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase(action_id)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                for (Map.Entry<String, List<Consumer<NetworkTokenAction>>> entry : actions.entrySet()) {
-                    for (Consumer<NetworkTokenAction> consumer : entry.getValue()) {
-                        consumer.accept(new NetworkTokenAction(token, token_data, action_id, target_server, expire, unit));
-                    }
-                }
-            }
-        });
     }
 
 }

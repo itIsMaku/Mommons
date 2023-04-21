@@ -27,17 +27,7 @@ public class bServerDataRepository {
         Map<String, bServer> newServers = Maps.newHashMap();
         for (SQLRow row : rows) {
             String id = row.getString("id");
-            Type type = new TypeToken<Map<String, Object>>() {
-            }.getType();
-            Map<String, Object> data = GSON.fromJson(row.getString("data"), type);
-            if (SERVERS.containsKey(id)) {
-                bServer server = SERVERS.get(id);
-                server.getCloudData().putAll(data);
-                continue;
-            }
-            bServer server = new bServer(id);
-            server.getCloudData().putAll(data);
-            newServers.put(id, server);
+            newServers.put(id,  new bServer(id));
         }
         SERVERS.entrySet().removeIf(e -> rows.stream().filter(row -> row.getString("id") != null).findFirst().orElse(null) == null);
         SERVERS.putAll(newServers);

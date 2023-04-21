@@ -3,14 +3,8 @@ package cz.maku.mommons.plugin;
 import com.google.common.collect.Lists;
 import cz.maku.mommons.bukkit.hologram.Hologram;
 import cz.maku.mommons.bukkit.hologram.Holograms;
-import cz.maku.mommons.player.PlayerDataRepository;
-import cz.maku.mommons.server.ServerDataRepository;
-import cz.maku.mommons.server.ServerDataService;
-import cz.maku.mommons.cloud.CachedCloud;
-import cz.maku.mommons.cloud.DirectCloud;
 import cz.maku.mommons.storage.database.SQLTable;
 import cz.maku.mommons.storage.database.type.MySQL;
-import cz.maku.mommons.token.NetworkTokenService;
 import cz.maku.mommons.worker.BukkitWorker;
 import cz.maku.mommons.worker.annotation.Plugin;
 import cz.maku.mommons.worker.plugin.WorkerPlugin;
@@ -36,7 +30,7 @@ public class MommonsPlugin extends WorkerPlugin {
 
     @Override
     public List<Class<?>> registerServices() {
-        return Lists.newArrayList(ServerDataService.class, ServerDataRepository.class, CachedCloud.class, DirectCloud.class, NetworkTokenService.class, PlayerDataRepository.class);
+        return Lists.newArrayList();
     }
 
     public <T> T getConfigValue(Class<T> clazz, String path) {
@@ -96,6 +90,13 @@ public class MommonsPlugin extends WorkerPlugin {
         networkTokens.addColumn("executed", Integer.class);
         networkTokens.addColumn("sent", String.class);
         networkTokens.create();
+
+        getWorker().registerPackages(
+                "cz.maku.mommons.cloud",
+                "cz.maku.mommons.server",
+                "cz.maku.mommons.player",
+                "cz.maku.mommons.token"
+        );
     }
 
     @Override

@@ -1,5 +1,6 @@
 package cz.maku.mommons.worker;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import cz.maku.mommons.logger.LoggerHandler;
 import cz.maku.mommons.storage.database.type.MySQL;
@@ -15,10 +16,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,9 +48,13 @@ public class Worker {
         }
     }
 
-    public void registerPackage(String packageName) {
-        Reflections reflections = new Reflections(packageName);
-        reflections.getTypesAnnotatedWith(Service.class).forEach(this::registerServices);
+    public void registerPackages(String... packageNames) {
+        List<Class<?>> classes = Lists.newArrayList();
+        for (String packageName : packageNames) {
+            Reflections reflections = new Reflections(packageName);
+            classes.addAll(reflections.getTypesAnnotatedWith(Service.class));
+        }
+        classes.forEach(this::registerServices);
     }
 
     public void setPublicMySQL(MySQL mySQL) {

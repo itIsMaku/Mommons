@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public final class ServerData {
 
     public static ImmutableMap<String, Server> getServers() {
