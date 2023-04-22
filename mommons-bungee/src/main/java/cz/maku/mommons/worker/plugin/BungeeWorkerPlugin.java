@@ -2,7 +2,7 @@ package cz.maku.mommons.worker.plugin;
 
 import com.google.common.collect.Lists;
 import cz.maku.mommons.logger.LoggerHandler;
-import cz.maku.mommons.plugin.MommonsPlugin;
+import cz.maku.mommons.plugin.MommonsPluginBungee;
 import cz.maku.mommons.worker.BungeeWorker;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 
-public abstract class WorkerPlugin extends Plugin {
+public abstract class BungeeWorkerPlugin extends Plugin {
 
     @Getter
     @Setter
@@ -29,7 +29,7 @@ public abstract class WorkerPlugin extends Plugin {
     public void onEnable() {
         getLogger().addHandler(new LoggerHandler(getClass()));
         preWorkerLoad();
-        worker = MommonsPlugin.getPlugin().getWorker();
+        worker = MommonsPluginBungee.getPlugin().getWorker();
         preLoad();
         worker.setPlugin(this);
         worker.registerServices(registerServices().toArray(new Class[0]));

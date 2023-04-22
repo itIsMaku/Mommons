@@ -1,6 +1,6 @@
 package cz.maku.mommons.bungee;
 
-import cz.maku.mommons.plugin.MommonsPlugin;
+import cz.maku.mommons.plugin.MommonsPluginBungee;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public final class Schedulers {
 
     public static final TaskScheduler TASK_SCHEDULER = ProxyServer.getInstance().getScheduler();
-    public static final Plugin SCHEDULER_SOURCE = MommonsPlugin.getPlugin();
+    public static final Plugin SCHEDULER_SOURCE = MommonsPluginBungee.getPlugin();
 
     public static ScheduledTask runAsync(Runnable task) {
         return TASK_SCHEDULER.runAsync(SCHEDULER_SOURCE, task);
