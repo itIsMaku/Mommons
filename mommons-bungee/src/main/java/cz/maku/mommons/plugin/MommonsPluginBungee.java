@@ -5,7 +5,7 @@ import com.google.common.io.ByteStreams;
 import cz.maku.mommons.bserver.bServerDataRepository;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.BungeeWorker;
-import cz.maku.mommons.worker.plugin.WorkerPlugin;
+import cz.maku.mommons.worker.plugin.BungeeWorkerPlugin;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import net.md_5.bungee.config.Configuration;
@@ -17,10 +17,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.List;
 
-public class MommonsPlugin extends WorkerPlugin {
+public class MommonsPluginBungee extends BungeeWorkerPlugin {
 
     @Getter
-    private static MommonsPlugin plugin;
+    private static MommonsPluginBungee plugin;
 
     private Configuration configuration;
 

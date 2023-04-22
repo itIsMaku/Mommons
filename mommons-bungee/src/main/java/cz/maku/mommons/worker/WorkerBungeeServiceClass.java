@@ -3,7 +3,7 @@ package cz.maku.mommons.worker;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import cz.maku.mommons.bungee.Schedulers;
-import cz.maku.mommons.plugin.MommonsPlugin;
+import cz.maku.mommons.plugin.MommonsPluginBungee;
 import cz.maku.mommons.storage.database.type.MySQL;
 import cz.maku.mommons.worker.annotation.BungeeCommand;
 import cz.maku.mommons.worker.annotation.BungeeEvent;
@@ -75,7 +75,7 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
         BungeeWorkerMethod bungeeWorkerMethod = new BungeeWorkerMethod(workerMethod);
         if (getService().commands() && bungeeWorkerMethod.isCommand()) {
             BungeeCommand command = bungeeWorkerMethod.getExecutable().getAnnotation(BungeeCommand.class);
-            ProxyServer.getInstance().getPluginManager().registerCommand(MommonsPlugin.getPlugin(), new Command(command.value(), command.permission(), command.aliases()) {
+            ProxyServer.getInstance().getPluginManager().registerCommand(MommonsPluginBungee.getPlugin(), new Command(command.value(), command.permission(), command.aliases()) {
                 @SneakyThrows
                 @Override
                 public void execute(CommandSender sender, String[] args) {
@@ -106,7 +106,7 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
         }
         if (getService().listener() && bungeeWorkerMethod.isEvent()) {
             BungeeEvent eventAnnotation = bungeeWorkerMethod.getExecutable().getAnnotation(BungeeEvent.class);
-            ProxyServer.getInstance().getPluginManager().registerListener(MommonsPlugin.getPlugin(), new Listener() {
+            ProxyServer.getInstance().getPluginManager().registerListener(MommonsPluginBungee.getPlugin(), new Listener() {
                 @EventHandler
                 public void onEvent(Event event) {
                     if (event.getClass().isInstance(eventAnnotation.value())) {
