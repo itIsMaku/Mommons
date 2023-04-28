@@ -316,7 +316,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
 
     @Override
     public String toString(T object) {
-        return null;
+        return object.toString();
     }
 
     @Override
