@@ -1,7 +1,7 @@
 package cz.maku.mommons.worker;
 
 import com.google.common.collect.Maps;
-import cz.maku.mommons.plugin.MommonsPluginBungee;
+import cz.maku.mommons.logger.LoggerHandler;
 import cz.maku.mommons.utils.Texts;
 import cz.maku.mommons.worker.annotation.Service;
 import lombok.AccessLevel;
@@ -9,6 +9,7 @@ import lombok.Getter;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Getter(AccessLevel.PROTECTED)
 public class BungeeWorker extends Worker {
@@ -16,7 +17,9 @@ public class BungeeWorker extends Worker {
     private Plugin plugin;
 
     public BungeeWorker() {
-        setLogger(MommonsPluginBungee.getPlugin().getLogger());
+        Logger logger = Logger.getLogger("Worker");
+        logger.addHandler(new LoggerHandler(getClass()));
+        setLogger(logger);
     }
 
     public void setPlugin(Plugin plugin) {

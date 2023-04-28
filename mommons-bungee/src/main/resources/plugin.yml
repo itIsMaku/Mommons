@@ -1,5 +1,5 @@
 name: MommonsProxy
-main: cz.maku.mommons.plugin.MommonsPlugin
+main: cz.maku.mommons.plugin.MommonsPluginBungee
 author: itIsMaku
 description: Plugin what loads every plugin depends on Mommons
 version: 2.0.0
