@@ -13,12 +13,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import static cz.maku.mommons.utils.Reflections.findConstructor;
 
 public final class Repositories {
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <ID, T> Repository<ID, T> createRepository(Connection connection, Class<T> entityClass) throws InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
         Entity entity = entityClass.getAnnotation(Entity.class);
-        Repository repository;
         if (entity.repositoryClass() != null && entity.repositoryClass() != DefaultRepository.class) {
             Class<?> repositoryClass = entity.repositoryClass();
             Object[] arguments = new Object[]{connection, entityClass};
@@ -30,45 +31,23 @@ public final class Repositories {
                     throw new SQLException("Not found public constructor.");
                 }
             }
-            repository = (Repository) constructor.newInstance(arguments);
-        } else {
-            String idColumn = "id";
-            Class<ID> idClass = null;
-            for (Field field : entityClass.getDeclaredFields()) {
-                if (field.isAnnotationPresent(Id.class)) {
-                    idClass = (Class<ID>) field.getType();
-                    idColumn = field.getName();
-                    if (field.isAnnotationPresent(AttributeName.class)) {
-                        idColumn = field.getAnnotation(AttributeName.class).value();
-                    }
-                    if (entityClass.getAnnotation(Entity.class).namePolicy().equals(NamePolicy.SQL)) {
-                        idColumn = Texts.underscore(idColumn);
-                    }
-                }
-            }
-            repository = new DefaultRepository<>(entity.name(), connection, idColumn, entityClass, idClass);
+            return (Repository) constructor.newInstance(arguments);
         }
-        return repository;
-    }
-
-    private static Constructor<?> findConstructor(Class<?> clazz, Object[] params) {
-        Constructor<?>[] constructors = clazz.getConstructors();
-        for (Constructor<?> constructor : constructors) {
-            Class<?>[] paramsTypes = constructor.getParameterTypes();
-            if (paramsTypes.length == params.length) {
-                boolean match = true;
-                for (int i = 0; i < paramsTypes.length; ++i) {
-                    if (!paramsTypes[i].isAssignableFrom(params[i].getClass())) {
-                        match = false;
-                        break;
-                    }
+        String idColumn = "id";
+        Class<ID> idClass = null;
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) {
+                idClass = (Class<ID>) field.getType();
+                idColumn = field.getName();
+                if (field.isAnnotationPresent(AttributeName.class)) {
+                    idColumn = field.getAnnotation(AttributeName.class).value();
                 }
-                if (match) {
-                    return constructor;
+                if (entityClass.getAnnotation(Entity.class).namePolicy().equals(NamePolicy.SQL)) {
+                    idColumn = Texts.underscore(idColumn);
                 }
             }
         }
-        return null;
+        return new DefaultRepository<>(entity.name(), connection, idColumn, entityClass, idClass);
     }
 
 }
