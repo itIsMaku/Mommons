@@ -92,7 +92,6 @@ public class MommonsPlugin extends WorkerPlugin {
         networkTokens.create();
 
         getWorker().registerPackages(
-                "cz.maku.mommons.cloud",
                 "cz.maku.mommons.server",
                 "cz.maku.mommons.player",
                 "cz.maku.mommons.token"
