@@ -1,6 +1,7 @@
 package cz.maku.mommons.token;
 
 import com.google.common.reflect.TypeToken;
+import cz.maku.mommons.Mommons;
 import cz.maku.mommons.plugin.MommonsPlugin;
 import cz.maku.mommons.server.Server;
 import cz.maku.mommons.storage.database.SQLRow;
@@ -41,12 +42,17 @@ public class NetworkTokenWorker {
                 LocalDateTime sent = row.getJsonObject("sent", LocalDateTime.class);
                 if (unit.between(sent, LocalDateTime.now()) > expire) {
                     logger.warning("Token '" + token + "' expired during downloading.");
+                    tokenData.put("error", "expired");
+                    MySQL.getApi().queryAsync("mommons_networktokens", "UPDATE {table} SET executed = 1, token_data = ? WHERE target_server = ? AND token = ?;", Mommons.GSON.toJson(tokenData), targetServer, token);
                     continue;
                 }
                 if (!networkTokenService.getActions().containsKey(actionId) || networkTokenService.getActions().get(actionId).isEmpty()) {
                     logger.severe("Action ID '" + actionId + "' does not have any registered action.");
+                    tokenData.put("error", "action_not_found");
+                    MySQL.getApi().queryAsync("mommons_networktokens", "UPDATE {table} SET executed = 1, token_data = ? WHERE target_server = ? AND token = ?;", Mommons.GSON.toJson(tokenData), targetServer, token);
                     continue;
                 }
+                MySQL.getApi().queryAsync("mommons_networktokens", "UPDATE {table} SET executed = 1 WHERE target_server = ? AND token = ?;", targetServer, token);
                 Map<String, List<Consumer<NetworkTokenAction>>> actions = networkTokenService.getActions()
                         .entrySet()
                         .stream()
