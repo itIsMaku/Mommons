@@ -1,6 +1,5 @@
 package cz.maku.mommons.ef;
 
-import com.google.common.collect.Lists;
 import cz.maku.mommons.ef.annotation.AttributeName;
 import cz.maku.mommons.ef.annotation.AutoIncrement;
 import cz.maku.mommons.ef.annotation.Entity;
@@ -18,8 +17,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public final class Tables {
 
@@ -121,7 +121,10 @@ public final class Tables {
                 if (typeConverter == null) {
                     throw new RuntimeException("Invalid class: " + field.getType().getName());
                 }
-                for (Method method : typeConverter.getClass().getDeclaredMethods()) {
+                for (Method method : Arrays.stream(typeConverter.getClass().getDeclaredMethods())
+                        .filter(method -> !method.isBridge())
+                        .collect(Collectors.toList())
+                ) {
                     if (method.getName().equals("convertToColumn")) {
                         sqlTableType = getSqlTableType(method.getReturnType());
                         break;
