@@ -92,7 +92,7 @@ public class WorkerBungeeServiceClass extends WorkerServiceClass {
                         }
                     }
                     if (commandSender == null) {
-                        throw new IllegalArgumentException("CommandSender is required in @BukkitCommand method.");
+                        throw new IllegalArgumentException("CommandSender is required in @BungeeCommand method.");
                     }
                     params.add(commandSender);
                     if (commandArgs != null) {

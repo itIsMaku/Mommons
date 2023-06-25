@@ -33,30 +33,32 @@ public class ServerDataService {
     @SneakyThrows
     @Initialize
     public void serverInit() {
-        localServerInfo = new LocalServerInfo();
-        String id = coreConfiguration.getString("server.id");
-        if (id == null) {
-            MommonsPlugin.getPlugin().getLogger().severe("Server id is null!");
-            return;
-        }
-        Optional<SQLRow> optionalRow = MySQL.getApi().single("mommons_servers", "SELECT * FROM {table} WHERE id = ?;", id);
-        Map<String, Object> data = Maps.newHashMap();
-        data.put("server-info", GSON.toJson(localServerInfo));
-        if (!optionalRow.isPresent()) {
-            MySQL.getApi().query("mommons_servers", "INSERT INTO {table} (id, data) VALUES (?, ?);", id, GSON.toJson(data));
-        }
-        Map<String, Object> oldData = Maps.newHashMap();
-        if (optionalRow.isPresent()) {
-            oldData = optionalRow.get().getJsonObject("data", new TypeToken<Map<String, Object>>() {
-            }.getType());
-        }
-        server = new Server(id, oldData, Maps.newConcurrentMap());
-        server.setMultipleValues(
-                ImmutableMap.of(
-                        "server-info", GSON.toJson(localServerInfo),
-                        "server-type", "unknown"
-                )
-        );
+        LocalServerInfo.of().thenAccept(localServerInfo -> {
+            this.localServerInfo = localServerInfo;
+            String id = coreConfiguration.getString("server.id");
+            if (id == null) {
+                MommonsPlugin.getPlugin().getLogger().severe("Server id is null!");
+                return;
+            }
+            Optional<SQLRow> optionalRow = MySQL.getApi().single("mommons_servers", "SELECT * FROM {table} WHERE id = ?;", id);
+            Map<String, Object> data = Maps.newHashMap();
+            data.put("server-info", GSON.toJson(localServerInfo));
+            if (!optionalRow.isPresent()) {
+                MySQL.getApi().query("mommons_servers", "INSERT INTO {table} (id, data) VALUES (?, ?);", id, GSON.toJson(data));
+            }
+            Map<String, Object> oldData = Maps.newHashMap();
+            if (optionalRow.isPresent()) {
+                oldData = optionalRow.get().getJsonObject("data", new TypeToken<Map<String, Object>>() {
+                }.getType());
+            }
+            server = new Server(id, oldData, Maps.newConcurrentMap());
+            server.setMultipleValues(
+                    ImmutableMap.of(
+                            "server-info", GSON.toJson(localServerInfo),
+                            "server-type", "unknown"
+                    )
+            );
+        });
     }
 
     @Destroy

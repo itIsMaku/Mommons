@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 @Getter
 public class LocalServerInfo {
@@ -22,6 +23,17 @@ public class LocalServerInfo {
     public LocalServerInfo() throws IOException {
         this.ip = Nets.getAddress();
         this.port = Bukkit.getServer().getPort();
+    }
+
+    public static CompletableFuture<LocalServerInfo> of() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return new LocalServerInfo();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
     }
 
     @SuppressWarnings("all")

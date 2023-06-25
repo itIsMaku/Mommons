@@ -42,6 +42,7 @@ dependencies {
     implementation 'commons-io:commons-io:20030203.000550'
     implementation 'com.github.ZorTik:ContainrGUI:0.4.1'
     implementation 'commons-codec:commons-codec:1.13'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
     compileOnly 'com.mojang:authlib:1.5.21'
     compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
 }

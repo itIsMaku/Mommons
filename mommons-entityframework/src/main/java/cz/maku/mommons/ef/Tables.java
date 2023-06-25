@@ -1,6 +1,6 @@
 package cz.maku.mommons.ef;
 
-import com.google.common.collect.Lists;
+import com.google.gson.internal.Primitives;
 import cz.maku.mommons.ef.annotation.AttributeName;
 import cz.maku.mommons.ef.annotation.AutoIncrement;
 import cz.maku.mommons.ef.annotation.Entity;
@@ -18,35 +18,37 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public final class Tables {
 
     @Nullable
     public static String getSqlTableType(Class<?> clazz, int length) {
+        clazz = Primitives.wrap(clazz);
         if (clazz.equals(String.class)) {
             return "VARCHAR(" + length + ")";
         }
-        if (clazz.equals(Integer.class) || clazz.equals(int.class)) {
+        if (clazz.equals(Integer.class)) {
             return "INT(" + length + ")";
         }
-        if (clazz.equals(Long.class) || clazz.equals(long.class)) {
+        if (clazz.equals(Long.class)) {
             return "BIGINT(" + length + ")";
         }
-        if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
+        if (clazz.equals(Boolean.class)) {
             return "INT(1)";
         }
-        if (clazz.equals(Double.class) || clazz.equals(double.class)) {
+        if (clazz.equals(Double.class)) {
             return "DOUBLE(" + length + ")";
         }
-        if (clazz.equals(Float.class) || clazz.equals(float.class)) {
+        if (clazz.equals(Float.class)) {
             return "FLOAT(" + length + ")";
         }
-        if (clazz.equals(Short.class) || clazz.equals(short.class)) {
+        if (clazz.equals(Short.class)) {
             return "SMALLINT(" + length + ")";
         }
-        if (clazz.equals(Byte.class) || clazz.equals(byte.class)) {
+        if (clazz.equals(Byte.class)) {
             return "TINYINT(" + length + ")";
         }
         return null;
@@ -54,16 +56,17 @@ public final class Tables {
 
     @Nullable
     public static String getSqlTableType(Class<?> clazz) {
+        clazz = Primitives.wrap(clazz);
         if (clazz.equals(String.class)) {
             return getSqlTableType(clazz, 255);
         }
-        if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
+        if (clazz.equals(Boolean.class)) {
             return getSqlTableType(clazz, 1);
         }
         return getSqlTableType(clazz, 11);
     }
 
-    public static <T> void createSqlTable(Connection connection, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static <T> void createSqlTable(Connection connection, Class<T> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         Entity entityAnnotation = clazz.getAnnotation(Entity.class);
         Constructor<?> constructor = Reflections.findConstructor(clazz, new Class<?>[]{});
         T instance = null;
@@ -121,7 +124,10 @@ public final class Tables {
                 if (typeConverter == null) {
                     throw new RuntimeException("Invalid class: " + field.getType().getName());
                 }
-                for (Method method : typeConverter.getClass().getDeclaredMethods()) {
+                for (Method method : Arrays.stream(typeConverter.getClass().getDeclaredMethods())
+                        .filter(method -> !method.isBridge())
+                        .collect(Collectors.toList())
+                ) {
                     if (method.getName().equals("convertToColumn")) {
                         sqlTableType = getSqlTableType(method.getReturnType());
                         break;
@@ -131,7 +137,6 @@ public final class Tables {
             addon = String.format("`%s` %s %s %s%s", columnName, sqlTableType, defaultValue, autoIncrement, end);
             statement.append(addon);
         }
-        System.out.println(statement.toString());
         MySQLStatementImpl mySQLStatement = new MySQLStatementImpl(statement.toString(), StatementType.CREATE, Collections.emptyMap());
         mySQLStatement.complete(connection);
     }
