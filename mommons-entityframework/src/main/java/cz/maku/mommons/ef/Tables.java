@@ -1,10 +1,8 @@
 package cz.maku.mommons.ef;
 
+import com.google.common.collect.Lists;
 import com.google.gson.internal.Primitives;
-import cz.maku.mommons.ef.annotation.AttributeName;
-import cz.maku.mommons.ef.annotation.AutoIncrement;
-import cz.maku.mommons.ef.annotation.Entity;
-import cz.maku.mommons.ef.annotation.Id;
+import cz.maku.mommons.ef.annotation.*;
 import cz.maku.mommons.ef.converter.TypeConverter;
 import cz.maku.mommons.ef.entity.NamePolicy;
 import cz.maku.mommons.ef.statement.MySQLStatementImpl;
@@ -18,8 +16,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public final class Tables {
@@ -77,7 +77,8 @@ public final class Tables {
         NamePolicy namePolicy = entityAnnotation.namePolicy();
         StringBuilder statement = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " ( ");
         String primaryKey = "";
-        for (Field field : clazz.getDeclaredFields()) {
+        List<Field> declaredFields = Arrays.stream(clazz.getDeclaredFields()).filter(field -> !field.isAnnotationPresent(Ignored.class)).collect(Collectors.toList());
+        for (Field field : declaredFields) {
             if (!ColumnValidator.validateClass(field)) {
                 throw new RuntimeException("Invalid class: " + field.getType().getName());
             }
@@ -115,7 +116,7 @@ public final class Tables {
                 defaultValue = "NOT NULL";
             }
             String end = ", ";
-            if (field.equals(clazz.getDeclaredFields()[clazz.getDeclaredFields().length - 1])) {
+            if (field.equals(declaredFields.get(declaredFields.size() - 1))) {
                 end = ", PRIMARY KEY (`" + primaryKey + "`) );";
             }
             String sqlTableType = getSqlTableType(field.getType());
