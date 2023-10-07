@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Getter
 public class WorkerServiceClass {
@@ -39,6 +38,7 @@ public class WorkerServiceClass {
         this.tasks = tasks;
     }
 
+    @SuppressWarnings("unused")
     public WorkerServiceClass(Worker worker, Service service, Object object, Logger logger) {
         this(worker, service, object, Maps.newConcurrentMap(), Maps.newConcurrentMap(), logger, Maps.newConcurrentMap());
     }
@@ -141,19 +141,35 @@ public class WorkerServiceClass {
 
     @SneakyThrows
     public void destroy() {
-        List<WorkerExecutable> destroyers = methods.values().stream().filter(WorkerExecutable::isDestroy).collect(Collectors.toList());
+        List<WorkerExecutable> destroyers = methods.values().stream().filter(WorkerExecutable::isDestroy).toList();
         for (WorkerExecutable destroyer : destroyers) {
-            if (destroyer.isAsync()) {
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        destroyer.invoke(new Object[]{});
-                    } catch (InvocationTargetException | IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                });
-            } else {
-                destroyer.invoke(new Object[]{});
-            }
+            invokeMethodAndResolveAnnotations(destroyer, List.of());
         }
     }
+
+    public void postInitialize() {
+        for (WorkerExecutable workerMethod : methods.values().stream().filter(WorkerExecutable::isPostInit).toList()) {
+            List<Object> parameters = List.of(workerMethod.getLoadParameters(worker));
+            invokeMethodAndResolveAnnotations(workerMethod, parameters);
+        }
+    }
+
+    private void invokeMethod(WorkerExecutable workerMethod, List<Object> params) {
+        try {
+            workerMethod.invoke(params.toArray());
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void invokeMethodAndResolveAnnotations(WorkerExecutable workerMethod, List<Object> params) {
+        if (workerMethod.isAnotherThread()) {
+            new Thread(() -> invokeMethod(workerMethod, params)).start();
+        } else if (workerMethod.isAsync()) {
+            CompletableFuture.runAsync(() -> invokeMethod(workerMethod, params));
+        } else {
+            invokeMethod(workerMethod, params);
+        }
+    }
+
 }

@@ -20,7 +20,7 @@ public class ExpiringMap<K, V> {
         map = new ConcurrentHashMap<>();
     }
 
-    public static ExpiringMap<?, ?> from(int expireAfter, ChronoUnit unit) {
+    public static <K, V> ExpiringMap<K, V> from(int expireAfter, ChronoUnit unit) {
         return new ExpiringMap<>(expireAfter, unit);
     }
 

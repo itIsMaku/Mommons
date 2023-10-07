@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public abstract class WorkerPlugin extends JavaPlugin {
     @Setter
     private BukkitWorker worker;
 
+    @Nullable
     public abstract List<Class<?>> registerServices();
 
     @Deprecated
@@ -28,15 +30,20 @@ public abstract class WorkerPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            Thread.currentThread().setName("main");
+        Thread thread = Thread.currentThread();
+        if (thread.getName().equalsIgnoreCase("Server thread")) {
+            thread.setName("main");
         }
         getLogger().addHandler(new LoggerHandler(getClass()));
         preWorkerLoad();
         worker = MommonsPlugin.getPlugin().getWorker();
         preLoad();
         worker.setJavaPlugin(this);
-        worker.registerServices(registerServices().toArray(new Class[0]));
+        List<Class<?>> classes = registerServices();
+        if (classes == null) {
+            classes = Lists.newArrayList();
+        }
+        worker.registerServices(classes.toArray(new Class<?>[0]));
         worker.initialize();
         load();
     }
