@@ -112,4 +112,8 @@ public class WorkerExecutable {
         return executable.isAnnotationPresent(Destroy.class);
     }
 
+    public boolean isPostInit() {
+        return executable.isAnnotationPresent(PostInitialize.class);
+    }
+
 }

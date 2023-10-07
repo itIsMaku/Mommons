@@ -121,6 +121,7 @@ public class Worker {
                 workerClass.initializeMethods();
                 workerClasses.put(clazz, workerClass);
                 logger.info("Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
+                workerClass.postInitialize();
             }
         } catch (Exception e) {
             logger.severe("Service '" + Texts.getShortedClassName(clazz) + "' was not initialized due exception!");
