@@ -21,7 +21,8 @@ public class LocalServerInfo {
     }
 
     public LocalServerInfo() throws IOException {
-        this.ip = Nets.getAddress();
+        //this.ip = Nets.getAddress();
+        this.ip = "localhost";
         this.port = Bukkit.getServer().getPort();
     }
 
