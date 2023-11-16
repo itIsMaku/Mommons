@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - '2.0'
-      - 'releases/*'
 
 jobs:
   qodana:
