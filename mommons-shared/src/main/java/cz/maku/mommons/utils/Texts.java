@@ -10,6 +10,13 @@ import java.util.stream.Collectors;
 public final class Texts {
 
     public static final char ARROW = '➤';
+    public static final char ARROW_RIGHT = '➜';
+    public static final char ARROW_LEFT = '⬅';
+    public static final char ARROW_UP = '⬆';
+    public static final char ARROW_DOWN = '⬇';
+    public static final char CORRECT = '✓';
+    public static final char INCORRECT = '✗';
+    public static final char STAR = '★';
 
     public static List<String> createTextBlock(int averageLineLength, String text) {
         List<String> lines = Lists.newArrayList();
