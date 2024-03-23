@@ -25,7 +25,7 @@ public class LoggerHandler extends Handler {
         } else {
             className = clazz.getName();
         }
-        record.setLoggerName(String.format("%s%s%s - %s%s%s", ConsoleColors.CYAN_BRIGHT, Thread.currentThread().getName(), ConsoleColors.WHITE_BRIGHT, ConsoleColors.CYAN_BRIGHT, className, ConsoleColors.WHITE_BRIGHT));
+        record.setLoggerName(String.format("%s%s%s - %s%s%s", ConsoleColors.CYAN_BRIGHT, Thread.currentThread().getName(), ConsoleColors.WHITE_BRIGHT, ConsoleColors.CYAN_BRIGHT, className, ConsoleColors.RESET));
     }
 
     @Override
