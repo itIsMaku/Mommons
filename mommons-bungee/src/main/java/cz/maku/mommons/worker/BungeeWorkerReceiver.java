@@ -2,7 +2,7 @@ package cz.maku.mommons.worker;
 
 import org.jetbrains.annotations.Nullable;
 
-public final class WorkerReceiver {
+public final class BungeeWorkerReceiver {
 
     @Nullable
     public static <T> T getService(Worker worker, Class<T> clazz) {

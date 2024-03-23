@@ -22,6 +22,7 @@ public class MommonsPluginBungee extends BungeeWorkerPlugin {
     @Getter
     private static MommonsPluginBungee plugin;
 
+    @Getter
     private Configuration configuration;
 
     @Override

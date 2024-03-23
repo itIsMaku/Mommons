@@ -1,6 +1,7 @@
 package cz.maku.mommons.utils;
 
 import com.google.common.collect.Lists;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +11,13 @@ import java.util.stream.Collectors;
 public final class Texts {
 
     public static final char ARROW = '➤';
+    public static final char ARROW_RIGHT = '➜';
+    public static final char ARROW_LEFT = '⬅';
+    public static final char ARROW_UP = '⬆';
+    public static final char ARROW_DOWN = '⬇';
+    public static final char CORRECT = '✓';
+    public static final char INCORRECT = '✗';
+    public static final char STAR = '★';
 
     public static List<String> createTextBlock(int averageLineLength, String text) {
         List<String> lines = Lists.newArrayList();
@@ -102,4 +110,9 @@ public final class Texts {
         }
         return temp.toString();
     }
+
+    public static String capitalize(@NotNull String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
 }

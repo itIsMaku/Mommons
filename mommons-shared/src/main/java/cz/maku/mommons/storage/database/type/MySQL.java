@@ -1,6 +1,7 @@
 package cz.maku.mommons.storage.database.type;
 
 import cz.maku.mommons.storage.database.SQLRow;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,6 +21,15 @@ public class MySQL extends JDBC {
     public MySQL(Connection connection) {
         super(connection);
         instance = this;
+    }
+
+    @NotNull
+    public static Connection connection() {
+        if (instance == null) {
+            throw new RuntimeException("MySQL is not initialized!");
+        }
+
+        return instance.getConnection();
     }
 
     public static MySQL getApi() {
