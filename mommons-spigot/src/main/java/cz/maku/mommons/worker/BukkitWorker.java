@@ -41,6 +41,7 @@ public class BukkitWorker extends Worker {
         workerBukkitServiceClass.initializeMethods();
         workerClasses.put(clazz, workerBukkitServiceClass);
         getLogger().info("Bukkit Service '" + Texts.getShortedClassName(clazz) + "' was successfully initialized.");
+        workerClass.postInitialize();
         return true;
     }
 }
